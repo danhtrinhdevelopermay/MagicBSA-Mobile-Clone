@@ -73,6 +73,74 @@
     color: var(--slate-600);
   }
   
+  /* iOS-style blur effects */
+  .ios-blur {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.8);
+  }
+  
+  .ios-blur-dark {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(0, 0, 0, 0.8);
+  }
+  
+  /* iOS-style button pressed state */
+  .ios-button-pressed {
+    transform: scale(0.95);
+    transition: transform 0.1s ease-in-out;
+  }
+  
+  /* Smooth animations */
+  .smooth-animation {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* iOS-style safe area support */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* Custom scrollbar for iOS feel */
+  .ios-scrollbar::-webkit-scrollbar {
+    width: 2px;
+  }
+  
+  .ios-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .ios-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 1px;
+  }
+  
+  /* Mask drawing styles */
+  .mask-canvas {
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  
+  /* Processing animation */
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 10px rgba(0, 122, 255, 0.5);
+    }
+    50% {
+      box-shadow: 0 0 20px rgba(0, 122, 255, 0.8);
+    }
+  }
+  
+  .processing-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  
   .bg-slate-50 {
     background-color: var(--slate-50);
   }

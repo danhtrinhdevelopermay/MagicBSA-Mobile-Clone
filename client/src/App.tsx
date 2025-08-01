@@ -7,6 +7,7 @@ import Home from "@/pages/home";
 import Generation from "@/pages/generation";
 import Upload from "@/pages/upload";
 import Editor from "@/pages/editor";
+import AppleCleanup from "@/pages/apple-cleanup";
 // ApiConfig moved to separate server
 import NotFound from "@/pages/not-found";
 
@@ -17,6 +18,7 @@ function Router() {
       <Route path="/generation" component={Generation} />
       <Route path="/upload" component={Upload} />
       <Route path="/editor" component={Editor} />
+      <Route path="/apple-cleanup" component={AppleCleanup} />
       {/* API config moved to separate server */}
       <Route component={NotFound} />
     </Switch>

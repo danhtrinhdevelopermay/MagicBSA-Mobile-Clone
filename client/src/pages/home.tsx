@@ -1,13 +1,29 @@
 import { useLocation } from "wouter";
 import BottomNavigation from "@/components/ui/bottom-navigation";
-import { WandSparkles, Menu, ArrowRight, Sparkles, Settings } from "lucide-react";
+import { WandSparkles, Menu, ArrowRight, Sparkles, Settings, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import FileUploadTrigger from "@/components/ui/file-upload-trigger";
 
 export default function Home() {
   const [, setLocation] = useLocation();
 
   const handleExploreFeatures = () => {
     setLocation('/generation');
+  };
+
+  const handleFileUpload = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const fileData = {
+        fileName: file.name,
+        fileType: file.type,
+        fileData: (reader.result as string).split(',')[1],
+        operation: 'cleanup'
+      };
+      sessionStorage.setItem('uploadedFile', JSON.stringify(fileData));
+      setLocation('/apple-cleanup');
+    };
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -39,13 +55,23 @@ export default function Home() {
             <p className="text-slate-600">Transform your images with powerful AI tools</p>
           </div>
           
-          <Button
-            onClick={handleExploreFeatures}
-            className="w-full bg-gradient-to-r from-primary to-secondary text-white py-4 rounded-2xl font-semibold text-lg flex items-center justify-center space-x-2 hover:shadow-lg transition-all mb-6"
-          >
-            <span>Explore AI Features</span>
-            <ArrowRight size={20} />
-          </Button>
+          <div className="space-y-3 mb-6">
+            <FileUploadTrigger
+              onFileSelect={handleFileUpload}
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 rounded-2xl font-semibold text-lg hover:shadow-lg transition-all"
+            >
+              <Upload className="mr-2" size={20} />
+              Upload & Clean Up Photo
+            </FileUploadTrigger>
+            
+            <Button
+              onClick={handleExploreFeatures}
+              className="w-full bg-gradient-to-r from-primary to-secondary text-white py-4 rounded-2xl font-semibold text-lg flex items-center justify-center space-x-2 hover:shadow-lg transition-all"
+            >
+              <span>Explore AI Features</span>
+              <ArrowRight size={20} />
+            </Button>
+          </div>
         </section>
 
         {/* Features Overview */}
@@ -60,13 +86,48 @@ export default function Home() {
               <p className="text-xs text-slate-600">AI-powered background removal</p>
             </div>
             
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+            <button 
+              onClick={() => {
+                // Create a demo image for testing
+                const canvas = document.createElement('canvas');
+                canvas.width = 400;
+                canvas.height = 300;
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                  ctx.fillStyle = '#f0f0f0';
+                  ctx.fillRect(0, 0, 400, 300);
+                  ctx.fillStyle = '#333';
+                  ctx.font = '20px Arial';
+                  ctx.textAlign = 'center';
+                  ctx.fillText('Sample Image', 200, 150);
+                }
+                
+                canvas.toBlob((blob) => {
+                  if (blob) {
+                    const file = new File([blob], 'sample.png', { type: 'image/png' });
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      const fileData = {
+                        fileName: file.name,
+                        fileType: file.type,
+                        fileData: (reader.result as string).split(',')[1],
+                        operation: 'cleanup'
+                      };
+                      sessionStorage.setItem('uploadedFile', JSON.stringify(fileData));
+                      setLocation('/apple-cleanup');
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                });
+              }}
+              className="bg-white rounded-xl p-4 shadow-sm border border-slate-200 hover:shadow-md transition-shadow text-left w-full"
+            >
               <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center mb-3">
                 <span className="text-purple-500 font-bold text-sm">✂️</span>
               </div>
               <h4 className="font-medium text-slate-800 mb-1">Object Removal</h4>
-              <p className="text-xs text-slate-600">Remove unwanted objects</p>
-            </div>
+              <p className="text-xs text-slate-600">Apple Photos style cleanup</p>
+            </button>
             
             <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
               <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center mb-3">
