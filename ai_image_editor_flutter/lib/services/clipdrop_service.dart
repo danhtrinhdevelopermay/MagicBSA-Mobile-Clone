@@ -42,7 +42,10 @@ class ClipDropService {
   bool _usingBackupApi = false;
 
   ClipDropService() {
-    _dio = Dio();
+    _dio = Dio(BaseOptions(
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
+    ));
     _initializeApiKeys();
   }
 
@@ -80,13 +83,7 @@ class ClipDropService {
     try {
       print('🌐 Fetching API keys from server: $_apiKeysUrl');
       
-      final response = await _dio.get(
-        _apiKeysUrl,
-        options: Options(
-          connectTimeout: const Duration(seconds: 10),
-          receiveTimeout: const Duration(seconds: 10),
-        ),
-      );
+      final response = await _dio.get(_apiKeysUrl);
 
       if (response.statusCode == 200) {
         final data = response.data;
