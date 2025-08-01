@@ -82,11 +82,14 @@ class _SimpleMaskDrawingScreenState extends State<SimpleMaskDrawingScreen> {
   ui.Image? _originalImageUI;
   bool _imageLoaded = false;
   bool _isProcessing = false;
+  final GlobalKey _drawingAreaKey = GlobalKey();
+  Size? _drawingAreaSize;
 
   @override
   void initState() {
     super.initState();
     _loadImage();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _updateDrawingAreaSize());
   }
 
   Future<void> _loadImage() async {
@@ -101,6 +104,8 @@ class _SimpleMaskDrawingScreenState extends State<SimpleMaskDrawingScreen> {
         _imageLoaded = true;
       });
       print('✅ Image loaded: ${frame.image.width}x${frame.image.height}');
+      // Update drawing area size after image is loaded
+      WidgetsBinding.instance.addPostFrameCallback((_) => _updateDrawingAreaSize());
     } catch (e) {
       print('❌ Error loading image: $e');
       if (mounted) {
@@ -119,6 +124,16 @@ class _SimpleMaskDrawingScreenState extends State<SimpleMaskDrawingScreen> {
     HapticFeedback.lightImpact(); // Add haptic feedback
   }
 
+  void _updateDrawingAreaSize() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final RenderBox? renderBox = _drawingAreaKey.currentContext?.findRenderObject() as RenderBox?;
+      if (renderBox != null) {
+        _drawingAreaSize = renderBox.size;
+        print('📐 Drawing area size: ${_drawingAreaSize!.width}x${_drawingAreaSize!.height}');
+      }
+    });
+  }
+
   void _clearMask() {
     setState(() {
       _maskPoints.clear();
@@ -133,12 +148,18 @@ class _SimpleMaskDrawingScreenState extends State<SimpleMaskDrawingScreen> {
       return;
     }
 
+    // Ensure drawing area size is available before processing
+    if (_drawingAreaSize == null) {
+      _updateDrawingAreaSize();
+      await Future.delayed(const Duration(milliseconds: 100)); // Wait for size update
+    }
+
     setState(() {
       _isProcessing = true;
     });
 
     try {
-      // Create mask image
+      // Create mask image with accurate coordinate mapping
       final maskBytes = await _createMaskFile();
       
       // Save mask to temporary file
@@ -178,8 +199,13 @@ class _SimpleMaskDrawingScreenState extends State<SimpleMaskDrawingScreen> {
       throw Exception('Original image not loaded or no mask points');
     }
 
+    if (_drawingAreaSize == null) {
+      throw Exception('Drawing area size not available');
+    }
+
     print('🎨 Creating mask file...');
     print('📏 Original image: ${_originalImageUI!.width}x${_originalImageUI!.height}');
+    print('📐 Drawing area: ${_drawingAreaSize!.width}x${_drawingAreaSize!.height}');
     print('🔍 Mask points: ${_maskPoints.length}');
 
     // Create mask image with same dimensions as original
@@ -191,13 +217,10 @@ class _SimpleMaskDrawingScreenState extends State<SimpleMaskDrawingScreen> {
     // Fill with black (keep areas)
     img.fill(maskImage, color: img.ColorRgb8(0, 0, 0));
 
-    // Get the canvas size for proper coordinate mapping
+    // Use REAL drawing area size for accurate coordinate mapping
     final imageAspectRatio = _originalImageUI!.width / _originalImageUI!.height;
-    
-    // Assume typical phone screen proportions for coordinate mapping
-    // This is a simplified approach - in a real app you'd get actual canvas dimensions
-    const canvasWidth = 400.0;
-    const canvasHeight = 600.0;
+    final canvasWidth = _drawingAreaSize!.width;
+    final canvasHeight = _drawingAreaSize!.height;
     final canvasAspectRatio = canvasWidth / canvasHeight;
 
     double displayWidth, displayHeight, offsetX, offsetY;
@@ -214,14 +237,23 @@ class _SimpleMaskDrawingScreenState extends State<SimpleMaskDrawingScreen> {
       offsetX = (canvasWidth - displayWidth) / 2;
     }
 
+    print('🎯 Coordinate mapping info:');
+    print('   Canvas: ${canvasWidth}x${canvasHeight}');
+    print('   Display: ${displayWidth}x${displayHeight}');
+    print('   Offset: (${offsetX}, ${offsetY})');
+    print('   Scale: ${_originalImageUI!.width / displayWidth}, ${_originalImageUI!.height / displayHeight}');
+
     // Convert screen coordinates to image coordinates and draw white circles
-    for (final point in _maskPoints) {
+    for (int i = 0; i < _maskPoints.length; i++) {
+      final point = _maskPoints[i];
+      
       // Adjust for image display offset
       final adjustedX = point.dx - offsetX;
       final adjustedY = point.dy - offsetY;
       
       // Skip points outside the image area
       if (adjustedX < 0 || adjustedY < 0 || adjustedX >= displayWidth || adjustedY >= displayHeight) {
+        print('⚠️ Point $i (${point.dx}, ${point.dy}) -> (${adjustedX}, ${adjustedY}) SKIPPED (outside image area)');
         continue;
       }
       
@@ -233,11 +265,13 @@ class _SimpleMaskDrawingScreenState extends State<SimpleMaskDrawingScreen> {
       final safeX = imageX.clamp(0, _originalImageUI!.width - 1);
       final safeY = imageY.clamp(0, _originalImageUI!.height - 1);
       
+      print('✅ Point $i: Screen(${point.dx.toStringAsFixed(1)}, ${point.dy.toStringAsFixed(1)}) -> Adjusted(${adjustedX.toStringAsFixed(1)}, ${adjustedY.toStringAsFixed(1)}) -> Image($safeX, $safeY)');
+      
       img.fillCircle(
         maskImage,
         x: safeX,
         y: safeY,
-        radius: (_brushSize * _originalImageUI!.width / displayWidth / 2).round(),
+        radius: (_brushSize * _originalImageUI!.width / displayWidth / 2).round().clamp(1, 20),
         color: img.ColorRgb8(255, 255, 255), // White = remove
       );
     }
@@ -289,6 +323,7 @@ class _SimpleMaskDrawingScreenState extends State<SimpleMaskDrawingScreen> {
                           }
                         },
                         child: CustomPaint(
+                          key: _drawingAreaKey,
                           painter: SimpleMaskPainter(
                             originalImage: _originalImageUI!,
                             maskPoints: _maskPoints,

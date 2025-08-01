@@ -278,10 +278,12 @@ class ClipDropService {
         case ProcessingOperation.cleanup:
           // Add mask file for cleanup operation
           if (maskFile != null) {
+            // Ensure mask file has same dimensions as image file before processing
+            final processedMaskFile = await _ensureMaskImageDimensions(maskFile, processedImageFile);
             formData.files.add(MapEntry(
               'mask_file',
               await MultipartFile.fromFile(
-                maskFile.path,
+                processedMaskFile.path,
                 filename: 'mask.png',
               ),
             ));
@@ -679,6 +681,53 @@ class ClipDropService {
     print('New file size: ${(await tempFile.length() / 1024 / 1024).toStringAsFixed(2)}MB');
     
     return tempFile;
+  }
+
+  /// Ensures mask image has exactly the same dimensions as the processed image
+  Future<File> _ensureMaskImageDimensions(File maskFile, File imageFile) async {
+    try {
+      // Read both images
+      final maskBytes = await maskFile.readAsBytes();
+      final imageBytes = await imageFile.readAsBytes();
+      
+      final maskImage = img.decodeImage(maskBytes);
+      final sourceImage = img.decodeImage(imageBytes);
+      
+      if (maskImage == null || sourceImage == null) {
+        throw Exception('Could not decode mask or source image');
+      }
+      
+      print('🎭 Mask dimensions check:');
+      print('   Source image: ${sourceImage.width}x${sourceImage.height}');
+      print('   Mask image: ${maskImage.width}x${maskImage.height}');
+      
+      // If dimensions already match, return original mask file
+      if (maskImage.width == sourceImage.width && maskImage.height == sourceImage.height) {
+        print('✅ Mask dimensions already match source image');
+        return maskFile;
+      }
+      
+      // Resize mask to match source image dimensions
+      print('🎯 Resizing mask to match source image dimensions...');
+      final resizedMask = img.copyResize(
+        maskImage,
+        width: sourceImage.width,
+        height: sourceImage.height,
+        interpolation: img.Interpolation.nearest, // Use nearest neighbor to preserve mask values
+      );
+      
+      // Save resized mask to temporary file
+      final tempDir = await Directory.systemTemp.createTemp('clipdrop_mask_');
+      final resizedMaskFile = File('${tempDir.path}/resized_mask.png');
+      await resizedMaskFile.writeAsBytes(img.encodePng(resizedMask));
+      
+      print('✅ Mask resized and saved: ${resizedMask.width}x${resizedMask.height}');
+      return resizedMaskFile;
+      
+    } catch (e) {
+      print('❌ Error ensuring mask dimensions: $e');
+      rethrow;
+    }
   }
 
   // Validate image file before API call (basic checks only)

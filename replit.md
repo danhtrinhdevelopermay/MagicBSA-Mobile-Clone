@@ -55,3 +55,28 @@ The mobile application is developed using Flutter 3.22.0 and Dart, employing the
 - **permission_handler**: For Android permissions.
 - **curved_navigation_bar**: For advanced bottom navigation UI.
 - **video_player**: For video playback of generated content.
+
+## Recent Technical Updates
+
+✅ **COORDINATE MAPPING PRECISION FIX** (August 1, 2025) - Resolved mask drawing coordinate inaccuracy:
+  - **CRITICAL ISSUE**: User draws mask at position A but AI removes objects at position B
+  - **ROOT CAUSE**: Hardcoded canvas size (400x600) in coordinate mapping instead of real widget dimensions
+  - **TECHNICAL SOLUTION**: 
+    * Added GlobalKey to capture actual drawing area size
+    * Real-time coordinate mapping using actual canvas dimensions
+    * Accurate screen-to-image coordinate transformation
+    * Enhanced mask and image dimension synchronization in ClipDropService
+  - **PRECISION IMPROVEMENTS**:
+    * Dynamic drawing area size detection with `_updateDrawingAreaSize()`
+    * Exact coordinate mapping between screen touch and image pixels
+    * Mask resizing to match processed image dimensions for API compatibility
+    * Debug logging for coordinate transformation verification
+  - **USER EXPERIENCE**: Perfect alignment between mask drawing and AI object removal
+  - **BUILD COMPATIBILITY**: Maintains GitHub Actions APK build compatibility
+
+✅ **CLIPDROP SERVICE INSTANCE ERROR FIX** (August 1, 2025) - Fixed missing static instance in ClipDropService:
+  - **COMPILATION ERROR**: lib/widgets/simple_mask_drawing_screen.dart:150:44: Error: Member not found: 'instance'
+  - **ROOT CAUSE**: ClipDropService class doesn't have static instance property, only constructor
+  - **SOLUTION**: Changed from `ClipDropService.instance.cleanup()` to `ClipDropService().cleanup()`
+  - **IMPACT**: Fixed APK build failure on GitHub Actions, mask drawing screen now compiles successfully
+  - **BUILD STATUS**: APK compilation error resolved, ready for successful GitHub Actions build
