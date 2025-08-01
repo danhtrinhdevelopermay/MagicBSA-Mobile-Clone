@@ -195,28 +195,36 @@ class _EnhancedEditorWidgetState extends State<EnhancedEditorWidget> {
     final featureId = widget.preSelectedFeature!;
     ProcessingOperation? operation;
     
-    // Map feature IDs to operations
+    // Map feature IDs to operations (updated to match generation screen IDs)
     switch (featureId) {
+      case 'removeBackground':
       case 'remove_background':
         operation = ProcessingOperation.removeBackground;
         break;
+      case 'uncrop':
       case 'expand_image':
         operation = ProcessingOperation.uncrop;
         break;
+      case 'imageUpscaling':
       case 'upscaling':
         operation = ProcessingOperation.imageUpscaling;
         break;
       case 'cleanup':
         operation = ProcessingOperation.cleanup;
         break;
+      case 'removeText':
       case 'remove_text':
         operation = ProcessingOperation.removeText;
         break;
       case 'reimagine':
         operation = ProcessingOperation.reimagine;
         break;
+      case 'textToImage':
       case 'text_to_image':
         operation = ProcessingOperation.textToImage;
+        break;
+      case 'productPhotography':
+        operation = ProcessingOperation.productPhotography;
         break;
     }
 
