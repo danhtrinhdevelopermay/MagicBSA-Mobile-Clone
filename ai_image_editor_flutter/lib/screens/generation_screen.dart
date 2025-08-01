@@ -129,103 +129,96 @@ class _GenerationScreenState extends State<GenerationScreen> with TickerProvider
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF667eea),
-              Color(0xFF764ba2),
-              Color(0xFFf093fb),
-              Color(0xFFf5576c),
-            ],
-            stops: [0.0, 0.3, 0.7, 1.0],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Simple Header
-              Container(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        IconButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          icon: Icon(
-                            Icons.close,
-                            color: Colors.white,
-                            size: 28,
-                          ),
-                        ),
-                        Spacer(),
-                        Container(
-                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            'AI POWERED',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Minimal Header - chỉ tập trung vào chọn tính năng
+            Container(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: Icon(
+                      Icons.arrow_back_ios,
+                      color: Color(0xFF2C2C2C),
+                      size: 24,
                     ),
-                    SizedBox(height: 20),
-                    Text(
+                  ),
+                  Expanded(
+                    child: Text(
                       'Chọn tính năng AI',
                       style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF2C2C2C),
                       ),
+                      textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Khám phá sức mạnh trí tuệ nhân tạo',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white.withOpacity(0.8),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              
-              // Enhanced Grid with Staggered Animation
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                  child: GridView.builder(
-                    physics: BouncingScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.78, // Slightly taller for better proportions
-                      crossAxisSpacing: 18,
-                      mainAxisSpacing: 20,
-                    ),
-                    itemCount: features.length,
-                    itemBuilder: (context, index) {
-                      final feature = features[index];
-                      return AnimatedContainer(
-                        duration: Duration(milliseconds: 300 + (index * 100)),
-                        curve: Curves.easeOutBack,
-                        child: _buildGifFeatureCard(feature),
-                      );
-                    },
                   ),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Color(0xFF8B7CE8),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'AI',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Subtitle nhẹ
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                'Khám phá các công cụ AI mạnh mẽ',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: Color(0xFF888888),
+                  fontWeight: FontWeight.w400,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            
+            SizedBox(height: 24),
+            
+            // Grid tính năng - tối ưu cho trải nghiệm chọn
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: GridView.builder(
+                  physics: BouncingScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.85, // Tỷ lệ tối ưu cho thiết kế mới
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                  ),
+                  itemCount: features.length,
+                  itemBuilder: (context, index) {
+                    final feature = features[index];
+                    return AnimatedContainer(
+                      duration: Duration(milliseconds: 200 + (index * 50)),
+                      curve: Curves.easeOutQuart,
+                      child: _buildGifFeatureCard(feature),
+                    );
+                  },
                 ),
               ),
-            ],
-          ),
+            ),
+            
+            SizedBox(height: 16),
+          ],
         ),
       ),
     );
