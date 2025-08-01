@@ -32,7 +32,7 @@ class ClipDropService {
   static const String _imageUpscalingUrl = 'https://clipdrop-api.co/image-upscaling/v1/upscale';
 
   // Server API endpoints for fetching keys từ server riêng biệt
-  static const String _serverBaseUrl = 'https://your-api-key-server.herokuapp.com'; // Deploy API key server riêng
+  static const String _serverBaseUrl = 'https://backendapi862827.onrender.com'; // Deploy API key server riêng
   static const String _apiKeysUrl = '$_serverBaseUrl/api/config/clipdrop-keys';
 
   late Dio _dio;
