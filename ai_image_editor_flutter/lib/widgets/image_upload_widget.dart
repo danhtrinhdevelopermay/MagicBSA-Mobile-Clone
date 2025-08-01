@@ -47,21 +47,10 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
       return;
     }
     
-    // Set up callback for when image is picked (for other features)
+    // Clear any existing callback - we'll handle navigation manually via "Bắt đầu xử lý" button
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = Provider.of<ImageEditProvider>(context, listen: false);
-      provider.setOnImagePickedCallback((file) {
-        if (mounted) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => EditorScreen(
-                originalImage: file,
-                preSelectedFeature: selectedFeature,
-              ),
-            ),
-          );
-        }
-      });
+      provider.setOnImagePickedCallback(null); // Clear auto-navigation
     });
   }
   

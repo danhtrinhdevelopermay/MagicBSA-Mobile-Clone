@@ -31,6 +31,7 @@ class ImageEditProvider extends ChangeNotifier {
 
   // Getters
   File? get originalImage => _originalImage;
+  File? get selectedImage => _originalImage; // Add alias for compatibility
   Uint8List? get processedImage => _processedImage;
   ProcessingState get state => _state;
   String get errorMessage => _errorMessage;
