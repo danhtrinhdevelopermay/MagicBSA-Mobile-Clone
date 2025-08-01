@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image/image.dart' as img;
+import 'dart:convert';
 
 enum ProcessingOperation {
   removeBackground,
@@ -30,6 +31,10 @@ class ClipDropService {
   static const String _productPhotoUrl = 'https://clipdrop-api.co/product-photography/v1';
   static const String _imageUpscalingUrl = 'https://clipdrop-api.co/image-upscaling/v1/upscale';
 
+  // Server API endpoints for fetching keys
+  static const String _serverBaseUrl = 'https://5000-brightstartsacademyai-aiimageedi-o88e1uzghsg.ws-us7.replit.dev'; // Replit dev server URL
+  static const String _apiKeysUrl = '$_serverBaseUrl/api/config/clipdrop-keys';
+
   late Dio _dio;
   String _currentApiKey = '';
   String _primaryApiKey = '';
@@ -48,13 +53,65 @@ class ClipDropService {
 
   Future<void> _loadApiKeys() async {
     try {
+      // First try to fetch API keys from server
+      if (await _fetchApiKeysFromServer()) {
+        print('✅ API keys loaded from server successfully');
+        return;
+      }
+
+      // Fallback to SharedPreferences if server fails
+      print('⚠️  Server unavailable, using cached API keys');
       final prefs = await SharedPreferences.getInstance();
       _primaryApiKey = prefs.getString('clipdrop_primary_api_key') ?? '2f62a50ae0c0b965c1f54763e90bb44c101d8d1b84b5a670f4a6bd336954ec2c77f3c3b28ad0c1c9271fcfdfa2abc664';
       _backupApiKey = prefs.getString('clipdrop_backup_api_key') ?? '7ce6a169f98dc2fb224fc5ad1663c53716b1ee3332fc7a3903dc8a5092feb096731cf4a19f9989cb2901351e1c086ff2';
       _currentApiKey = _primaryApiKey;
       _usingBackupApi = false;
     } catch (e) {
-      print('Lỗi khi tải API keys: $e');
+      print('❌ Lỗi khi tải API keys: $e');
+      // Use hardcoded fallback as last resort
+      _primaryApiKey = '2f62a50ae0c0b965c1f54763e90bb44c101d8d1b84b5a670f4a6bd336954ec2c77f3c3b28ad0c1c9271fcfdfa2abc664';
+      _backupApiKey = '7ce6a169f98dc2fb224fc5ad1663c53716b1ee3332fc7a3903dc8a5092feb096731cf4a19f9989cb2901351e1c086ff2';
+      _currentApiKey = _primaryApiKey;
+      _usingBackupApi = false;
+    }
+  }
+
+  Future<bool> _fetchApiKeysFromServer() async {
+    try {
+      print('🌐 Fetching API keys from server: $_apiKeysUrl');
+      
+      final response = await _dio.get(
+        _apiKeysUrl,
+        options: Options(
+          connectTimeout: const Duration(seconds: 10),
+          receiveTimeout: const Duration(seconds: 10),
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        
+        if (data['primary'] != null && data['backup'] != null) {
+          _primaryApiKey = data['primary'];
+          _backupApiKey = data['backup'];
+          _currentApiKey = data['status'] == 'active' ? _primaryApiKey : _backupApiKey;
+          _usingBackupApi = data['status'] != 'active';
+
+          // Cache the keys locally for offline use
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('clipdrop_primary_api_key', _primaryApiKey);
+          await prefs.setString('clipdrop_backup_api_key', _backupApiKey);
+          await prefs.setString('clipdrop_last_updated', data['lastUpdated'] ?? DateTime.now().toIso8601String());
+
+          print('✅ API keys updated from server at ${data['lastUpdated']}');
+          return true;
+        }
+      }
+      
+      return false;
+    } catch (e) {
+      print('⚠️  Failed to fetch API keys from server: $e');
+      return false;
     }
   }
 

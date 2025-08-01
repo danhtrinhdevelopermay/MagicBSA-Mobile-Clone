@@ -1,6 +1,6 @@
 import { useLocation } from "wouter";
 import BottomNavigation from "@/components/ui/bottom-navigation";
-import { WandSparkles, Menu, ArrowRight, Sparkles } from "lucide-react";
+import { WandSparkles, Menu, ArrowRight, Sparkles, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
@@ -21,8 +21,12 @@ export default function Home() {
             </div>
             <h1 className="text-lg font-semibold text-slate-800">AI Image Editor</h1>
           </div>
-          <button className="w-8 h-8 flex items-center justify-center text-slate-600">
-            <Menu size={16} />
+          <button 
+            onClick={() => setLocation('/api-config')}
+            className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-primary transition-colors"
+            title="API Configuration"
+          >
+            <Settings size={16} />
           </button>
         </div>
       </header>

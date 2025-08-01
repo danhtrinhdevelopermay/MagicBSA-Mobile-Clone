@@ -7,6 +7,7 @@ import Home from "@/pages/home";
 import Generation from "@/pages/generation";
 import Upload from "@/pages/upload";
 import Editor from "@/pages/editor";
+import ApiConfig from "@/pages/ApiConfig";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -16,6 +17,7 @@ function Router() {
       <Route path="/generation" component={Generation} />
       <Route path="/upload" component={Upload} />
       <Route path="/editor" component={Editor} />
+      <Route path="/api-config" component={ApiConfig} />
       <Route component={NotFound} />
     </Switch>
   );
