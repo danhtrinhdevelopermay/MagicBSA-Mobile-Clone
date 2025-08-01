@@ -74,13 +74,14 @@ The mobile application is developed using Flutter 3.22.0 and Dart, employing the
   - **TESTING**: Ready for APK build and deployment on GitHub Actions workflow
 
 ✓ **DYNAMIC API KEY MANAGEMENT SYSTEM** (August 1, 2025) - Implemented server-based API key fetching:
-  - **WEB API ENDPOINT**: Created `/api/config/clipdrop-keys` for Flutter app to fetch API keys dynamically
-  - **FLUTTER INTEGRATION**: Updated ClipDropService to fetch API keys from web server on startup
+  - **SEPARATE API KEY SERVER**: Created independent Node.js server in `api-key-server/` directory
+  - **WEB API ENDPOINT**: `/api/config/clipdrop-keys` endpoint for Flutter app to fetch API keys dynamically
+  - **FLUTTER INTEGRATION**: Updated ClipDropService to fetch API keys from separate server on startup
   - **FALLBACK SYSTEM**: Three-layer fallback: Server → SharedPreferences → Hardcoded defaults
-  - **WEB INTERFACE**: Added `/api-config` page for managing API keys through web UI
-  - **SECURITY**: API keys stored as text on server, fetched dynamically without rebuilding app
+  - **WEB INTERFACE**: Beautiful HTML interface for managing API keys with real-time updates
+  - **FILE-BASED CONFIG**: API keys stored in `config.json` file, not coupled with main web project
   - **OFFLINE SUPPORT**: Keys cached locally for offline use when server unavailable
-  - **REAL-TIME UPDATES**: Changes take effect immediately without app rebuild
+  - **INDEPENDENT DEPLOYMENT**: API key server can be deployed separately on Heroku/Railway/VPS
   - **AUTO-FAILOVER**: Backup API key used automatically if primary key fails
 
 ✓ **UPGRADED: LTX VIDEO API FOR IMAGE-TO-VIDEO GENERATION** - Major upgrade to cutting-edge LTX Video model:

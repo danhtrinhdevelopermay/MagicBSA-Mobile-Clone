@@ -21,12 +21,8 @@ export default function Home() {
             </div>
             <h1 className="text-lg font-semibold text-slate-800">AI Image Editor</h1>
           </div>
-          <button 
-            onClick={() => setLocation('/api-config')}
-            className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-primary transition-colors"
-            title="API Configuration"
-          >
-            <Settings size={16} />
+          <button className="w-8 h-8 flex items-center justify-center text-slate-600">
+            <Menu size={16} />
           </button>
         </div>
       </header>

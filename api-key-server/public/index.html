@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClipDrop API Key Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4F46E5;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status-card {
+            background: #F3F4F6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-active {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        
+        .status-inactive {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+        
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .alert-success {
+            background: #D1FAE5;
+            color: #065F46;
+            border: 1px solid #A7F3D0;
+        }
+        
+        .alert-error {
+            background: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #FECACA;
+        }
+        
+        .masked-key {
+            font-family: monospace;
+            background: #F3F4F6;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔑 ClipDrop API Key Manager</h1>
+            <p>Quản lý API keys cho Flutter App - AI Image Editor</p>
+        </div>
+        
+        <div class="content">
+            <div id="alert" style="display: none;"></div>
+            
+            <div class="status-card">
+                <h3 style="margin-bottom: 12px;">Trạng thái hiện tại</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span>Status:</span>
+                    <span id="currentStatus" class="status-badge status-active">Active</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span>Primary Key:</span>
+                    <span id="currentPrimary" class="masked-key">Loading...</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span>Backup Key:</span>
+                    <span id="currentBackup" class="masked-key">Loading...</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>Last Updated:</span>
+                    <span id="lastUpdated" style="font-size: 12px; color: #6B7280;">Loading...</span>
+                </div>
+            </div>
+            
+            <form id="apiKeyForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="primaryKey">Primary API Key</label>
+                        <input type="password" id="primaryKey" placeholder="Nhập primary API key" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="backupKey">Backup API Key</label>
+                        <input type="password" id="backupKey" placeholder="Nhập backup API key" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="status">Status</label>
+                    <select id="status">
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn" id="updateBtn">
+                    Cập nhật API Keys
+                </button>
+            </form>
+            
+            <div style="margin-top: 30px;">
+                <h3 style="margin-bottom: 16px;">Hướng dẫn sử dụng</h3>
+                <ul style="color: #6B7280; font-size: 14px; line-height: 1.6;">
+                    <li>Flutter app sẽ tự động lấy API keys từ server này khi khởi động</li>
+                    <li>Keys được cache local trong app để sử dụng offline</li>
+                    <li>Thay đổi keys sẽ có hiệu lực ngay lập tức không cần rebuild app</li>
+                    <li>Backup key sẽ được sử dụng tự động nếu primary key thất bại</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let config = {};
+        
+        // Load current configuration
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config/clipdrop-keys');
+                config = await response.json();
+                updateUI();
+            } catch (error) {
+                showAlert('Lỗi khi tải cấu hình: ' + error.message, 'error');
+            }
+        }
+        
+        // Update UI with current config
+        function updateUI() {
+            document.getElementById('currentStatus').textContent = config.status === 'active' ? 'Active' : 'Inactive';
+            document.getElementById('currentStatus').className = `status-badge ${config.status === 'active' ? 'status-active' : 'status-inactive'}`;
+            
+            document.getElementById('currentPrimary').textContent = maskApiKey(config.primary);
+            document.getElementById('currentBackup').textContent = maskApiKey(config.backup);
+            document.getElementById('lastUpdated').textContent = new Date(config.lastUpdated).toLocaleString('vi-VN');
+            
+            // Update form
+            document.getElementById('primaryKey').value = config.primary;
+            document.getElementById('backupKey').value = config.backup;
+            document.getElementById('status').value = config.status;
+        }
+        
+        // Mask API key for display
+        function maskApiKey(key) {
+            if (!key || key.length < 8) return key;
+            return key.substring(0, 4) + '...' + key.substring(key.length - 4);
+        }
+        
+        // Show alert message
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert alert-${type}`;
+            alert.style.display = 'block';
+            
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Handle form submission
+        document.getElementById('apiKeyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const updateBtn = document.getElementById('updateBtn');
+            updateBtn.disabled = true;
+            updateBtn.textContent = 'Đang cập nhật...';
+            
+            try {
+                const formData = {
+                    primary: document.getElementById('primaryKey').value,
+                    backup: document.getElementById('backupKey').value,
+                    status: document.getElementById('status').value
+                };
+                
+                const response = await fetch('/api/config/clipdrop-keys', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    config = result.config;
+                    updateUI();
+                    showAlert('✅ API keys đã được cập nhật thành công!', 'success');
+                } else {
+                    showAlert('❌ ' + result.error, 'error');
+                }
+            } catch (error) {
+                showAlert('❌ Lỗi khi cập nhật: ' + error.message, 'error');
+            } finally {
+                updateBtn.disabled = false;
+                updateBtn.textContent = 'Cập nhật API Keys';
+            }
+        });
+        
+        // Load config on page load
+        loadConfig();
+    </script>
+</body>
+</html>

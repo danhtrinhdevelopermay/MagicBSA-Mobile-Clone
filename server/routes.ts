@@ -7,7 +7,7 @@ import multer from "multer";
 import path from "path";
 import { randomUUID } from "crypto";
 import fs from "fs/promises";
-import { API_KEYS, getCurrentClipDropApiKey, updateApiKeys, type ApiKeyConfig } from "./config/api-keys";
+// Removed API key management - moved to separate server
 
 // Configure multer for file uploads
 const upload = multer({
@@ -42,11 +42,10 @@ const uploadCleanup = multer({
 });
 
 async function processWithClipdrop(imageBuffer: Buffer, operation: string, maskBuffer?: Buffer): Promise<Buffer> {
-  // Use API key from configuration file
-  const CLIPDROP_API_KEY = getCurrentClipDropApiKey();
+  const CLIPDROP_API_KEY = process.env.CLIPDROP_API_KEY || process.env.VITE_CLIPDROP_API_KEY || "";
   
   if (!CLIPDROP_API_KEY) {
-    throw new Error("Clipdrop API key not found in configuration");
+    throw new Error("Clipdrop API key not found in environment variables");
   }
 
   // Map operations to API endpoints
@@ -97,49 +96,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Directory might already exist
   }
 
-  // API Keys endpoints for Flutter app
-  app.get("/api/config/clipdrop-keys", (req, res) => {
-    try {
-      // Return API keys for Flutter app
-      res.json({
-        primary: API_KEYS.clipdrop.primary,
-        backup: API_KEYS.clipdrop.backup,
-        status: API_KEYS.clipdrop.status,
-        lastUpdated: API_KEYS.clipdrop.lastUpdated
-      });
-    } catch (error) {
-      console.error("Get API keys error:", error);
-      res.status(500).json({ message: "Failed to get API keys" });
-    }
-  });
-
-  // Update API keys endpoint (for dynamic updates)
-  app.post("/api/config/clipdrop-keys", express.json(), (req, res) => {
-    try {
-      const { primary, backup, status } = req.body;
-      
-      if (!primary || !backup) {
-        return res.status(400).json({ message: "Both primary and backup API keys are required" });
-      }
-
-      updateApiKeys({
-        clipdrop: {
-          primary,
-          backup,
-          status: status || 'active',
-          lastUpdated: new Date().toISOString()
-        }
-      });
-
-      res.json({
-        message: "API keys updated successfully",
-        config: API_KEYS.clipdrop
-      });
-    } catch (error) {
-      console.error("Update API keys error:", error);
-      res.status(500).json({ message: "Failed to update API keys" });
-    }
-  });
+  // API key management moved to separate server
 
   // Direct cleanup processing with mask
   app.post("/api/cleanup", uploadCleanup.fields([{ name: 'image', maxCount: 1 }, { name: 'mask', maxCount: 1 }]), async (req: any, res) => {

@@ -31,8 +31,8 @@ class ClipDropService {
   static const String _productPhotoUrl = 'https://clipdrop-api.co/product-photography/v1';
   static const String _imageUpscalingUrl = 'https://clipdrop-api.co/image-upscaling/v1/upscale';
 
-  // Server API endpoints for fetching keys
-  static const String _serverBaseUrl = 'https://5000-brightstartsacademyai-aiimageedi-o88e1uzghsg.ws-us7.replit.dev'; // Replit dev server URL
+  // Server API endpoints for fetching keys từ server riêng biệt
+  static const String _serverBaseUrl = 'https://your-api-key-server.herokuapp.com'; // Deploy API key server riêng
   static const String _apiKeysUrl = '$_serverBaseUrl/api/config/clipdrop-keys';
 
   late Dio _dio;
