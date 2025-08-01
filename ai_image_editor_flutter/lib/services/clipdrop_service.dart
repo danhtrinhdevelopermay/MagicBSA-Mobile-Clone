@@ -62,16 +62,16 @@ class ClipDropService {
       // Fallback to SharedPreferences if server fails
       print('⚠️  Server unavailable, using cached API keys');
       final prefs = await SharedPreferences.getInstance();
-      _primaryApiKey = prefs.getString('clipdrop_primary_api_key') ?? '2f62a50ae0c0b965c1f54763e90bb44c101d8d1b84b5a670f4a6bd336954ec2c77f3c3b28ad0c1c9271fcfdfa2abc664';
-      _backupApiKey = prefs.getString('clipdrop_backup_api_key') ?? '7ce6a169f98dc2fb224fc5ad1663c53716b1ee3332fc7a3903dc8a5092feb096731cf4a19f9989cb2901351e1c086ff2';
+      _primaryApiKey = prefs.getString('clipdrop_primary_api_key') ?? '';
+      _backupApiKey = prefs.getString('clipdrop_backup_api_key') ?? '';
       _currentApiKey = _primaryApiKey;
       _usingBackupApi = false;
     } catch (e) {
       print('❌ Lỗi khi tải API keys: $e');
-      // Use hardcoded fallback as last resort
-      _primaryApiKey = '2f62a50ae0c0b965c1f54763e90bb44c101d8d1b84b5a670f4a6bd336954ec2c77f3c3b28ad0c1c9271fcfdfa2abc664';
-      _backupApiKey = '7ce6a169f98dc2fb224fc5ad1663c53716b1ee3332fc7a3903dc8a5092feb096731cf4a19f9989cb2901351e1c086ff2';
-      _currentApiKey = _primaryApiKey;
+      // No hardcoded fallback - API keys must come from server or cached data
+      _primaryApiKey = '';
+      _backupApiKey = '';
+      _currentApiKey = '';
       _usingBackupApi = false;
     }
   }
@@ -229,12 +229,11 @@ class ClipDropService {
     return await _executeWithFailover(() async {
       if (_currentApiKey.isEmpty) {
         throw Exception(
-          'Vui lòng cấu hình API key Clipdrop trong màn hình Cài đặt.\n\n'
-          'Để lấy API key:\n'
-          '1. Truy cập https://clipdrop.co/apis\n'
-          '2. Đăng ký hoặc đăng nhập\n'
-          '3. Tạo API key mới\n'
-          '4. Nhập vào màn hình Cài đặt của app'
+          'Không thể lấy API key từ server.\n\n'
+          'Vui lòng kiểm tra:\n'
+          '1. Kết nối internet\n'
+          '2. Server API key có hoạt động\n'
+          '3. Thử lại sau vài phút'
         );
       }
 
@@ -529,12 +528,11 @@ class ClipDropService {
     return await _executeWithFailover(() async {
       if (_currentApiKey.isEmpty) {
         throw Exception(
-          'Vui lòng cấu hình API key Clipdrop trong màn hình Cài đặt.\n\n'
-          'Để lấy API key:\n'
-          '1. Truy cập https://clipdrop.co/apis\n'
-          '2. Đăng ký hoặc đăng nhập\n'
-          '3. Tạo API key mới\n'
-          '4. Nhập vào màn hình Cài đặt của app'
+          'Không thể lấy API key từ server.\n\n'
+          'Vui lòng kiểm tra:\n'
+          '1. Kết nối internet\n'
+          '2. Server API key có hoạt động\n'
+          '3. Thử lại sau vài phút'
         );
       }
 
