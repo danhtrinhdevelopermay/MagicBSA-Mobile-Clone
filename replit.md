@@ -66,6 +66,15 @@ This is a full-stack JavaScript application that provides AI-powered image editi
   - **Enhanced Processing Painter**: Created custom painter replacing CircularProgressIndicator with sophisticated visual effects
   - **Apple-inspired Visual Polish**: Combined multiple subtle effects to create premium processing feedback
   - Animation timings: Gradient (3s), Wave ripples (2s), Pulse (1.5s) for smooth, non-jarring experience
+
+- **2025-08-02**: Enhanced modal UI with modern Material You/iOS 17 design
+  - **Modern Dialog Design**: Replaced AlertDialog with custom Dialog using rounded-xl corners (28px radius) and shadow-lg
+  - **Gradient Title**: Added ShaderMask with purple gradient (indigo→violet→purple) for premium look
+  - **Card-based Options**: Converted ListTiles to modern card components with gradient icons and rounded corners
+  - **Enhanced Typography**: Larger title font (28px), improved spacing, better color hierarchy
+  - **Interactive Elements**: Added InkWell ripple effects, arrow indicators, and visual feedback
+  - **Color Scheme**: Purple gradient icons, light gray backgrounds, clean white modal surface
+  - **Accessibility**: Better contrast ratios, larger touch targets, improved visual hierarchy
   
 - **2025-08-02**: Updated Flutter Android app with Apple Photos-style object removal interface
   - Removed brush size slider - fixed 24px size like Apple Photos

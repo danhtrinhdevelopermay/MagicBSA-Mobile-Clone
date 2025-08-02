@@ -882,45 +882,254 @@ class _EnhancedEditorWidgetState extends State<EnhancedEditorWidget> {
   void _showMaskDialog(Feature feature, ImageEditProvider provider) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(feature.title),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Chọn cách tạo mask để xóa vật thể:'),
-            const SizedBox(height: 16),
-            
-            // Option 1: Draw mask
-            ListTile(
-              leading: const Icon(Icons.brush),
-              title: const Text('Vẽ vùng cần xóa'),
-              subtitle: const Text('Vẽ trực tiếp trên ảnh'),
-              onTap: () {
-                Navigator.pop(context);
-                _navigateToMaskDrawing(feature, provider);
-              },
-            ),
-            
-            const Divider(),
-            
-            // Option 2: Upload mask image
-            ListTile(
-              leading: const Icon(Icons.upload_file),
-              title: const Text('Tải mask PNG'),
-              subtitle: const Text('Sử dụng ảnh mask có sẵn'),
-              onTap: () {
-                Navigator.pop(context);
-                _uploadMaskFile(feature, provider);
-              },
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Hủy'),
+      barrierDismissible: true,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 120),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
-        ],
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Modern gradient title
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: ShaderMask(
+                    shaderCallback: (bounds) => const LinearGradient(
+                      colors: [
+                        Color(0xFF6366F1), // Indigo
+                        Color(0xFF8B5CF6), // Violet
+                        Color(0xFFA855F7), // Purple
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ).createShader(bounds),
+                    child: const Text(
+                      'Dọn dẹp đối tượng',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 8),
+                
+                // Subtitle
+                Text(
+                  'Chọn cách tạo mask để xóa vật thể:',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                
+                const SizedBox(height: 32),
+                
+                // Option 1: Draw mask - Modern card style
+                Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.pop(context);
+                        _navigateToMaskDrawing(feature, provider);
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: const Color(0xFFE2E8F0),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFF6366F1),
+                                    Color(0xFF8B5CF6),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: const Icon(
+                                Icons.brush_rounded,
+                                color: Colors.white,
+                                size: 28,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Vẽ vùng cần xóa',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF1E293B),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Vẽ trực tiếp trên ảnh',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[600],
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              color: Colors.grey[400],
+                              size: 16,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                
+                // Option 2: Upload mask - Modern card style
+                Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.pop(context);
+                        _uploadMaskFile(feature, provider);
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: const Color(0xFFE2E8F0),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFF8B5CF6),
+                                    Color(0xFFA855F7),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: const Icon(
+                                Icons.upload_file_rounded,
+                                color: Colors.white,
+                                size: 28,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Tải mask PNG',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF1E293B),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Sử dụng ảnh mask có sẵn',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[600],
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              color: Colors.grey[400],
+                              size: 16,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 24),
+                
+                // Cancel button - Modern text button
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Hủy',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
