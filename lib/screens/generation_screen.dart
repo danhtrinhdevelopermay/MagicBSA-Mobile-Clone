@@ -31,12 +31,12 @@ class _GenerationScreenState extends State<GenerationScreen> {
     ),
     FeatureCard(
       operation: ProcessingOperation.cleanup,
-      title: 'Xóa Vật Thể',
-      description: 'Xóa bỏ các đối tượng không mong muốn',
+      title: 'Clean Up',
+      description: 'Apple Photos-style object removal',
       videoPath: 'assets/videos/cleanup.mp4',
-      icon: Icons.cleaning_services,
+      icon: Icons.auto_fix_high,
       gradient: const LinearGradient(
-        colors: [Color(0xFFEC4899), Color(0xFFF97316)],
+        colors: [Color(0xFF007AFF), Color(0xFF5856D6)],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       ),
@@ -145,6 +145,22 @@ class _GenerationScreenState extends State<GenerationScreen> {
       controller.dispose();
     }
     super.dispose();
+  }
+
+  void _selectFeature(ProcessingOperation operation) {
+    final provider = Provider.of<ImageEditProvider>(context, listen: false);
+    provider.setSelectedOperation(operation);
+    
+    if (operation == ProcessingOperation.cleanup) {
+      // Navigate directly to Apple Photos style cleanup screen
+      Navigator.pushNamed(context, '/apple-cleanup');
+    } else if (operation == ProcessingOperation.textToImage) {
+      // For text to image, go directly to editor
+      Navigator.pushNamed(context, '/editor');
+    } else {
+      // For other operations, go to upload screen first
+      Navigator.pushNamed(context, '/upload');
+    }
   }
 
   void _selectFeature(ProcessingOperation operation) {

@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/image_provider.dart';
 import '../models/processing_operation.dart';
 import '../widgets/floating_bottom_navigation.dart';
-// import '../screens/simple_mask_drawing_screen.dart'; // TODO: Create this screen
+import '../screens/apple_photos_cleanup_screen.dart';
 import '../widgets/result_widget.dart';
 import '../widgets/loading_overlay_widget.dart';
 
@@ -112,11 +112,10 @@ class _EditorScreenState extends State<EditorScreen> {
   }
 
   void _navigateToMaskDrawing() {
-    // TODO: Implement mask drawing screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Tính năng vẽ mask đang được phát triển'),
-        backgroundColor: Colors.orange,
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const ApplePhotosCleanupScreen(),
       ),
     );
   }

@@ -33,6 +33,14 @@ class ImageEditProvider extends ChangeNotifier {
   String get currentOperation => _currentOperation;
   double get progress => _progress;
   ProcessingOperation? get selectedOperation => _selectedOperation;
+  
+  // Get selected image as bytes for display
+  Uint8List? get selectedImage {
+    if (_originalImage != null) {
+      return _originalImage!.readAsBytesSync();
+    }
+    return null;
+  }
 
   // Pick image from gallery or camera
   Future<void> pickImage(ImageSource source) async {
@@ -229,6 +237,37 @@ class ImageEditProvider extends ChangeNotifier {
     _processedImage = null;
     _setState(ProcessingState.idle);
     notifyListeners();
+  }
+
+  // Cleanup with mask for Apple Photos style editing
+  Future<void> cleanupWithMask(Uint8List maskData) async {
+    if (_originalImage == null) return;
+    
+    try {
+      _setState(ProcessingState.processing);
+      _currentOperation = 'Đang dọn dẹp đối tượng...';
+      _startProgressAnimation();
+      
+      // Create temporary mask file
+      final tempDir = Directory.systemTemp.createTempSync();
+      final maskFile = File('${tempDir.path}/mask.png');
+      await maskFile.writeAsBytes(maskData);
+      
+      final processedBytes = await _clipDropService.cleanup(
+        _originalImage!,
+        maskFile: maskFile,
+      );
+      
+      _processedImage = processedBytes;
+      _setState(ProcessingState.completed);
+      
+      // Clean up temp file
+      await maskFile.delete();
+      await tempDir.delete();
+      
+    } catch (e) {
+      _setError('Lỗi khi xử lý ảnh: $e');
+    }
   }
 
   // Reset to initial state
