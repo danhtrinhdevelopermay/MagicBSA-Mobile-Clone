@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../widgets/image_upload_widget.dart';
+import 'apple_photos_cleanup_screen.dart';
 
 
 class GenerationScreen extends StatefulWidget {
@@ -52,11 +53,11 @@ class _GenerationScreenState extends State<GenerationScreen> with TickerProvider
       gifPath: 'assets/gifs/upscaling.gif',
     ),
     Feature(
-      title: 'Xóa vật thể',
-      description: 'Loại bỏ bất kỳ vật thể nào',
+      title: 'Clean Up',
+      description: 'Apple Photos-style object removal',
       icon: Icons.auto_fix_high,
       gradient: LinearGradient(
-        colors: [Color(0xFFfc4a1a), Color(0xFFf7b733)],
+        colors: [Color(0xFF007AFF), Color(0xFF5856D6)],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       ),
@@ -434,14 +435,23 @@ class _GenerationScreenState extends State<GenerationScreen> with TickerProvider
   }
 
   void _navigateToUpload(String operation) {
-    // Navigate to normal upload widget for all features
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => ImageUploadWidget(
-          preSelectedFeature: operation,
+    if (operation == 'cleanup') {
+      // Navigate to Apple Photos style cleanup screen
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => ApplePhotosCleanupScreen(),
         ),
-      ),
-    );
+      );
+    } else {
+      // Navigate to normal upload widget for all other features
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => ImageUploadWidget(
+            preSelectedFeature: operation,
+          ),
+        ),
+      );
+    }
   }
 }
 

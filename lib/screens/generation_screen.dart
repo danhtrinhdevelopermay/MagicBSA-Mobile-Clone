@@ -163,14 +163,6 @@ class _GenerationScreenState extends State<GenerationScreen> {
     }
   }
 
-  void _selectFeature(ProcessingOperation operation) {
-    // Lưu operation đã chọn và chuyển đến màn hình upload
-    final provider = Provider.of<ImageEditProvider>(context, listen: false);
-    provider.setSelectedOperation(operation);
-    
-    Navigator.pushNamed(context, '/upload');
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

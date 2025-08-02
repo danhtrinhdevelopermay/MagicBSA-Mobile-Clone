@@ -275,6 +275,41 @@ class ImageEditProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Cleanup with mask for Apple Photos style editing
+  Future<void> cleanupWithMask(Uint8List maskData) async {
+    if (_originalImage == null) return;
+    
+    try {
+      _setState(ProcessingState.processing);
+      _currentOperation = 'Đang dọn dẹp đối tượng...';
+      _startProgressAnimation();
+      
+      // Create temporary mask file
+      final tempDir = Directory.systemTemp.createTempSync();
+      final maskFile = File('${tempDir.path}/mask.png');
+      await maskFile.writeAsBytes(maskData);
+      
+      final processedBytes = await _clipDropService.cleanup(
+        _originalImage!,
+        maskFile,
+      );
+      
+      _processedImage = processedBytes;
+      _lastCompletedOperation = ProcessingOperation.cleanup;
+      _setState(ProcessingState.completed);
+      
+      // Save to history
+      await _saveToHistory(ProcessingOperation.cleanup, 'Dọn dẹp đối tượng');
+      
+      // Clean up temp file
+      await maskFile.delete();
+      await tempDir.delete();
+      
+    } catch (e) {
+      _setError('Lỗi khi xử lý ảnh: $e');
+    }
+  }
+
   void _setError(String message) {
     _errorMessage = message;
     _currentOperation = null; // Clear current operation when error occurs
