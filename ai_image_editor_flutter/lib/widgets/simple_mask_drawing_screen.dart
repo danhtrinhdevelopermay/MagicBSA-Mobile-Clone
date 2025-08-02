@@ -432,14 +432,14 @@ class _SimpleMaskDrawingScreenState extends State<SimpleMaskDrawingScreen> {
                   if (_isProcessing)
                     Container(
                       color: Colors.black.withOpacity(0.3),
-                      child: const Center(
+                      child: Center(
                         child: Container(
-                          padding: EdgeInsets.all(32),
-                          decoration: BoxDecoration(
+                          padding: const EdgeInsets.all(32),
+                          decoration: const BoxDecoration(
                             color: Colors.black54,
                             borderRadius: BorderRadius.all(Radius.circular(16)),
                           ),
-                          child: Column(
+                          child: const Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               SizedBox(
