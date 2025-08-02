@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../models/history_item.dart';
 import '../services/history_service.dart';
 import '../widgets/result_widget.dart';
+import '../widgets/interactive_button.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -317,29 +318,38 @@ class _HistoryScreenState extends State<HistoryScreen> with TickerProviderStateM
               ),
             ),
             
-            // Action buttons
+            // Action buttons with fade effects
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                IconButton(
-                  onPressed: () => _downloadHistoryItem(item),
-                  icon: const Icon(
+                InteractiveButton(
+                  onTap: () => _downloadHistoryItem(item),
+                  pressedOpacity: 0.6,
+                  borderRadius: BorderRadius.circular(8),
+                  padding: const EdgeInsets.all(8),
+                  child: const Icon(
                     Icons.download_outlined,
                     size: 20,
                     color: Color(0xFF64748b),
                   ),
                 ),
-                IconButton(
-                  onPressed: () => _shareHistoryItem(item),
-                  icon: const Icon(
+                InteractiveButton(
+                  onTap: () => _shareHistoryItem(item),
+                  pressedOpacity: 0.6,
+                  borderRadius: BorderRadius.circular(8),
+                  padding: const EdgeInsets.all(8),
+                  child: const Icon(
                     Icons.share_outlined,
                     size: 20,
                     color: Color(0xFF64748b),
                   ),
                 ),
-                IconButton(
-                  onPressed: () => _deleteHistoryItem(item),
-                  icon: const Icon(
+                InteractiveButton(
+                  onTap: () => _deleteHistoryItem(item),
+                  pressedOpacity: 0.6,
+                  borderRadius: BorderRadius.circular(8),
+                  padding: const EdgeInsets.all(8),
+                  child: const Icon(
                     Icons.delete_outline,
                     size: 20,
                     color: Color(0xFFef4444),

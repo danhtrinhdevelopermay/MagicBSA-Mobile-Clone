@@ -75,6 +75,15 @@ This is a full-stack JavaScript application that provides AI-powered image editi
   - **Interactive Elements**: Added InkWell ripple effects, arrow indicators, and visual feedback
   - **Color Scheme**: Purple gradient icons, light gray backgrounds, clean white modal surface
   - **Accessibility**: Better contrast ratios, larger touch targets, improved visual hierarchy
+
+- **2025-08-02**: Implemented global fade hover/press effects for all buttons in Android app
+  - **InteractiveButton Widget**: Created custom button widget with fade animation on press/release
+  - **Global Application**: Applied to all IconButtons, TextButtons, ElevatedButtons throughout the app
+  - **Consistent UX**: Unified press feedback with 0.6-0.7 opacity fade effect and 100ms duration
+  - **Animation System**: Single/TickerProvider animation controller for smooth transitions
+  - **Affected Components**: Modal buttons, navigation buttons, action buttons, toolbar buttons
+  - **Extension Method**: Added withInteractiveEffect() extension for easy widget enhancement
+  - **Performance**: Optimized animation system to prevent memory leaks and smooth performance
   
 - **2025-08-02**: Updated Flutter Android app with Apple Photos-style object removal interface
   - Removed brush size slider - fixed 24px size like Apple Photos

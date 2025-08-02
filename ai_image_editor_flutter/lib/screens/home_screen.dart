@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/image_provider.dart';
 import '../widgets/image_upload_widget.dart';
 import '../widgets/enhanced_editor_widget.dart';
-
+import '../widgets/interactive_button.dart';
 import '../widgets/result_widget.dart';
 import '../widgets/bottom_navigation_widget.dart';
 import '../widgets/loading_overlay_widget.dart';
@@ -130,9 +130,12 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          IconButton(
-            onPressed: () => _showMenu(context),
-            icon: const Icon(
+          InteractiveButton(
+            onTap: () => _showMenu(context),
+            pressedOpacity: 0.6,
+            borderRadius: BorderRadius.circular(8),
+            padding: const EdgeInsets.all(8),
+            child: const Icon(
               Icons.menu,
               color: Color(0xFF64748b),
             ),

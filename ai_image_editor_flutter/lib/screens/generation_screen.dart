@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../widgets/image_upload_widget.dart';
+import '../widgets/interactive_button.dart';
 import 'apple_photos_cleanup_screen.dart';
 
 
@@ -139,9 +140,12 @@ class _GenerationScreenState extends State<GenerationScreen> with TickerProvider
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
               child: Row(
                 children: [
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: Icon(
+                  InteractiveButton(
+                    onTap: () => Navigator.of(context).pop(),
+                    pressedOpacity: 0.6,
+                    borderRadius: BorderRadius.circular(8),
+                    padding: const EdgeInsets.all(8),
+                    child: Icon(
                       Icons.arrow_back_ios,
                       color: Color(0xFF2C2C2C),
                       size: 24,

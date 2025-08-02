@@ -5,6 +5,7 @@ import '../providers/image_provider.dart';
 import '../screens/editor_screen.dart';
 import 'text_to_image_widget.dart';
 import 'image_to_video_widget.dart';
+import 'interactive_button.dart';
 
 class ImageUploadWidget extends StatefulWidget {
   final String? preSelectedFeature;
@@ -93,9 +94,12 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.black87),
-          onPressed: () => Navigator.of(context).pop(),
+        leading: InteractiveButton(
+          onTap: () => Navigator.of(context).pop(),
+          pressedOpacity: 0.6,
+          borderRadius: BorderRadius.circular(8),
+          padding: const EdgeInsets.all(8),
+          child: Icon(Icons.arrow_back_ios, color: Colors.black87),
         ),
         title: Text(
           _getFeatureTitle(selectedFeature),

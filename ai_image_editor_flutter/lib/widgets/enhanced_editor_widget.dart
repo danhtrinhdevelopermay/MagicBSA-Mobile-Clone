@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../providers/image_provider.dart';
 import '../services/clipdrop_service.dart';
 import 'simple_mask_drawing_screen.dart';
+import 'interactive_button.dart';
 
 
 enum InputType {
@@ -534,19 +535,28 @@ class _EnhancedEditorWidgetState extends State<EnhancedEditorWidget> {
           maxLines: 3,
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
+          InteractiveButton(
+            onTap: () => Navigator.pop(context),
+            pressedOpacity: 0.6,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: const Text('Hủy'),
           ),
-          ElevatedButton(
-            onPressed: () {
+          InteractiveButton(
+            onTap: () {
               Navigator.pop(context);
               provider.processImage(
                 feature.operation,
                 prompt: _promptController.text,
               );
             },
-            child: const Text('Xử lý'),
+            pressedOpacity: 0.7,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            backgroundColor: Theme.of(context).primaryColor,
+            borderRadius: BorderRadius.circular(8),
+            child: const Text(
+              'Xử lý',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -654,23 +664,30 @@ class _EnhancedEditorWidgetState extends State<EnhancedEditorWidget> {
               const SizedBox(height: 16),
               Row(
                 children: [
-                  ElevatedButton(
-                    onPressed: () {
+                  InteractiveButton(
+                    onTap: () {
                       setState(() {
                         _extendLeft = _extendRight = _extendUp = _extendDown = 0;
                       });
                     },
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                    pressedOpacity: 0.7,
+                    backgroundColor: Colors.red,
+                    borderRadius: BorderRadius.circular(8),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: const Text('Reset', style: TextStyle(color: Colors.white)),
                   ),
                   const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: () {
+                  InteractiveButton(
+                    onTap: () {
                       setState(() {
                         _extendLeft = _extendRight = _extendUp = _extendDown = 200;
                       });
                     },
-                    child: const Text('200px tất cả'),
+                    pressedOpacity: 0.7,
+                    backgroundColor: Theme.of(context).primaryColor,
+                    borderRadius: BorderRadius.circular(8),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: const Text('200px tất cả', style: TextStyle(color: Colors.white)),
                   ),
                 ],
               ),
@@ -678,12 +695,14 @@ class _EnhancedEditorWidgetState extends State<EnhancedEditorWidget> {
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
+          InteractiveButton(
+            onTap: () => Navigator.pop(context),
+            pressedOpacity: 0.6,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: const Text('Hủy'),
           ),
-          ElevatedButton(
-            onPressed: () {
+          InteractiveButton(
+            onTap: () {
               Navigator.pop(context);
               provider.processImage(
                 feature.operation,
@@ -693,7 +712,11 @@ class _EnhancedEditorWidgetState extends State<EnhancedEditorWidget> {
                 extendDown: _extendDown,
               );
             },
-            child: const Text('Xử lý'),
+            pressedOpacity: 0.7,
+            backgroundColor: Theme.of(context).primaryColor,
+            borderRadius: BorderRadius.circular(8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: const Text('Xử lý', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -730,19 +753,25 @@ class _EnhancedEditorWidgetState extends State<EnhancedEditorWidget> {
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
+          InteractiveButton(
+            onTap: () => Navigator.pop(context),
+            pressedOpacity: 0.6,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: const Text('Hủy'),
           ),
-          ElevatedButton(
-            onPressed: () {
+          InteractiveButton(
+            onTap: () {
               Navigator.pop(context);
               provider.processImage(
                 feature.operation,
                 scene: _selectedScene,
               );
             },
-            child: const Text('Xử lý'),
+            pressedOpacity: 0.7,
+            backgroundColor: Theme.of(context).primaryColor,
+            borderRadius: BorderRadius.circular(8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: const Text('Xử lý', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -809,26 +838,34 @@ class _EnhancedEditorWidgetState extends State<EnhancedEditorWidget> {
               Row(
                 children: [
                   Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
+                    child: InteractiveButton(
+                      onTap: () {
                         setState(() {
                           _targetWidth = 1024;
                           _targetHeight = 1024;
                         });
                       },
-                      child: const Text('1024x1024'),
+                      pressedOpacity: 0.7,
+                      backgroundColor: Theme.of(context).primaryColor,
+                      borderRadius: BorderRadius.circular(8),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: const Text('1024x1024', style: TextStyle(color: Colors.white)),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
+                    child: InteractiveButton(
+                      onTap: () {
                         setState(() {
                           _targetWidth = 2048;
                           _targetHeight = 2048;
                         });
                       },
-                      child: const Text('2048x2048'),
+                      pressedOpacity: 0.7,
+                      backgroundColor: Theme.of(context).primaryColor,
+                      borderRadius: BorderRadius.circular(8),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: const Text('2048x2048', style: TextStyle(color: Colors.white)),
                     ),
                   ),
                 ],
@@ -837,14 +874,18 @@ class _EnhancedEditorWidgetState extends State<EnhancedEditorWidget> {
               Row(
                 children: [
                   Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
+                    child: InteractiveButton(
+                      onTap: () {
                         setState(() {
                           _targetWidth = 4096;
                           _targetHeight = 4096;
                         });
                       },
-                      child: const Text('4096x4096'),
+                      pressedOpacity: 0.7,
+                      backgroundColor: Theme.of(context).primaryColor,
+                      borderRadius: BorderRadius.circular(8),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: const Text('4096x4096', style: TextStyle(color: Colors.white)),
                     ),
                   ),
                 ],
@@ -859,12 +900,14 @@ class _EnhancedEditorWidgetState extends State<EnhancedEditorWidget> {
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
+          InteractiveButton(
+            onTap: () => Navigator.pop(context),
+            pressedOpacity: 0.6,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: const Text('Hủy'),
           ),
-          ElevatedButton(
-            onPressed: () {
+          InteractiveButton(
+            onTap: () {
               Navigator.pop(context);
               provider.processImage(
                 feature.operation,
@@ -872,7 +915,11 @@ class _EnhancedEditorWidgetState extends State<EnhancedEditorWidget> {
                 targetHeight: _targetHeight,
               );
             },
-            child: const Text('Nâng cấp'),
+            pressedOpacity: 0.7,
+            backgroundColor: Theme.of(context).primaryColor,
+            borderRadius: BorderRadius.circular(8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: const Text('Nâng cấp', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -943,161 +990,157 @@ class _EnhancedEditorWidgetState extends State<EnhancedEditorWidget> {
                 
                 const SizedBox(height: 32),
                 
-                // Option 1: Draw mask - Modern card style
+                // Option 1: Draw mask - Modern card style with fade effect
                 Container(
                   margin: const EdgeInsets.only(bottom: 16),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.pop(context);
-                        _navigateToMaskDrawing(feature, provider);
-                      },
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: const Color(0xFFE2E8F0),
-                            width: 1.5,
-                          ),
+                  child: InteractiveButton(
+                    onTap: () {
+                      Navigator.pop(context);
+                      _navigateToMaskDrawing(feature, provider);
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    pressedOpacity: 0.7,
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: const Color(0xFFE2E8F0),
+                          width: 1.5,
                         ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 56,
-                              height: 56,
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    Color(0xFF6366F1),
-                                    Color(0xFF8B5CF6),
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: const Icon(
-                                Icons.brush_rounded,
-                                color: Colors.white,
-                                size: 28,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Vẽ vùng cần xóa',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF1E293B),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Vẽ trực tiếp trên ảnh',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey[600],
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Color(0xFF6366F1),
+                                  Color(0xFF8B5CF6),
                                 ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                            Icon(
-                              Icons.arrow_forward_ios_rounded,
-                              color: Colors.grey[400],
-                              size: 16,
+                            child: const Icon(
+                              Icons.brush_rounded,
+                              color: Colors.white,
+                              size: 28,
                             ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Vẽ vùng cần xóa',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF1E293B),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Vẽ trực tiếp trên ảnh',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            color: Colors.grey[400],
+                            size: 16,
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
                 
-                // Option 2: Upload mask - Modern card style
+                // Option 2: Upload mask - Modern card style with fade effect
                 Container(
                   margin: const EdgeInsets.only(bottom: 16),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.pop(context);
-                        _uploadMaskFile(feature, provider);
-                      },
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: const Color(0xFFE2E8F0),
-                            width: 1.5,
-                          ),
+                  child: InteractiveButton(
+                    onTap: () {
+                      Navigator.pop(context);
+                      _uploadMaskFile(feature, provider);
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    pressedOpacity: 0.7,
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: const Color(0xFFE2E8F0),
+                          width: 1.5,
                         ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 56,
-                              height: 56,
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    Color(0xFF8B5CF6),
-                                    Color(0xFFA855F7),
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: const Icon(
-                                Icons.upload_file_rounded,
-                                color: Colors.white,
-                                size: 28,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Tải mask PNG',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF1E293B),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Sử dụng ảnh mask có sẵn',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey[600],
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Color(0xFF8B5CF6),
+                                  Color(0xFFA855F7),
                                 ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                            Icon(
-                              Icons.arrow_forward_ios_rounded,
-                              color: Colors.grey[400],
-                              size: 16,
+                            child: const Icon(
+                              Icons.upload_file_rounded,
+                              color: Colors.white,
+                              size: 28,
                             ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Tải mask PNG',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF1E293B),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Sử dụng ảnh mask có sẵn',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            color: Colors.grey[400],
+                            size: 16,
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -1105,17 +1148,14 @@ class _EnhancedEditorWidgetState extends State<EnhancedEditorWidget> {
                 
                 const SizedBox(height: 24),
                 
-                // Cancel button - Modern text button
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                // Cancel button - Modern text button with fade effect
+                InteractiveButton(
+                  onTap: () => Navigator.pop(context),
+                  borderRadius: BorderRadius.circular(12),
+                  pressedOpacity: 0.6,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
                   ),
                   child: Text(
                     'Hủy',

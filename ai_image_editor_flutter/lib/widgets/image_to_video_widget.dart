@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import '../services/segmind_api_service.dart';
 import '../widgets/video_player_widget.dart';
+import 'interactive_button.dart';
 
 class ImageToVideoWidget extends StatefulWidget {
   const ImageToVideoWidget({Key? key}) : super(key: key);
@@ -177,9 +178,12 @@ class _ImageToVideoWidgetState extends State<ImageToVideoWidget>
                 padding: const EdgeInsets.all(20),
                 child: Row(
                   children: [
-                    IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                    InteractiveButton(
+                      onTap: () => Navigator.of(context).pop(),
+                      pressedOpacity: 0.6,
+                      borderRadius: BorderRadius.circular(8),
+                      padding: const EdgeInsets.all(8),
+                      child: Icon(Icons.arrow_back, color: Colors.white, size: 28),
                     ),
                     Expanded(
                       child: Column(
