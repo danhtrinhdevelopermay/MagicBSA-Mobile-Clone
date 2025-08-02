@@ -56,7 +56,16 @@ This is a full-stack JavaScript application that provides AI-powered image editi
 - Đảm bảo không ảnh hưởng đến việc build APK khi thay đổi hoặc phát triển ứng dụng
 
 ## Recent Changes
-- **2025-08-01**: Created Apple Photos-inspired object removal interface
+- **2025-08-02**: Updated Flutter Android app with Apple Photos-style object removal interface
+  - Removed brush size slider - fixed 24px size like Apple Photos
+  - Changed mask color from red to white semi-transparent (matching iOS)
+  - Added Apple Photos-style instruction overlay: "Tap, brush, or circle what you want to remove"
+  - Updated header with Cancel/RESET/Clean Up buttons like iOS
+  - Added processing overlay with "Cleaning up..." message
+  - Full-screen interface without borders/margins
+  - Instructions hide automatically after first draw
+
+- **2025-08-01**: Created Apple Photos-inspired object removal interface (Web version)
   - Full-screen editor with iOS-style design
   - Interactive mask drawing with touch support
   - Real-time processing feedback

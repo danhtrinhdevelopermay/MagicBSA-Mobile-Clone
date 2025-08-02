@@ -48,9 +48,9 @@ class SimpleMaskPainter extends CustomPainter {
       ..filterQuality = FilterQuality.high;
     canvas.drawImageRect(originalImage, srcRect, imageRect, imagePaint);
 
-    // Draw mask points
+    // Draw mask points - Apple Photos style (white semi-transparent)
     final maskPaint = Paint()
-      ..color = Colors.red.withOpacity(0.7)
+      ..color = Colors.white.withOpacity(0.9) // White like Apple Photos
       ..style = PaintingStyle.fill;
 
     for (final point in maskPoints) {
@@ -78,12 +78,13 @@ class SimpleMaskDrawingScreen extends StatefulWidget {
 
 class _SimpleMaskDrawingScreenState extends State<SimpleMaskDrawingScreen> {
   List<Offset> _maskPoints = [];
-  double _brushSize = 30.0;
+  double _brushSize = 24.0; // Apple Photos fixed brush size
   ui.Image? _originalImageUI;
   bool _imageLoaded = false;
   bool _isProcessing = false;
   final GlobalKey _drawingAreaKey = GlobalKey();
   Size? _drawingAreaSize;
+  bool _showInstructions = true;
 
   @override
   void initState() {
@@ -120,6 +121,9 @@ class _SimpleMaskDrawingScreenState extends State<SimpleMaskDrawingScreen> {
   void _addMaskPoint(Offset point) {
     setState(() {
       _maskPoints.add(point);
+      if (_showInstructions) {
+        _showInstructions = false; // Hide instructions after first draw
+      }
     });
     HapticFeedback.lightImpact(); // Add haptic feedback
   }
@@ -137,6 +141,7 @@ class _SimpleMaskDrawingScreenState extends State<SimpleMaskDrawingScreen> {
   void _clearMask() {
     setState(() {
       _maskPoints.clear();
+      _showInstructions = true; // Show instructions again after reset
     });
   }
 
@@ -284,140 +289,194 @@ class _SimpleMaskDrawingScreenState extends State<SimpleMaskDrawingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Vẽ vùng cần xóa'),
-        backgroundColor: Colors.black87,
-        foregroundColor: Colors.white,
-        actions: [
-          if (_maskPoints.isNotEmpty)
-            IconButton(
-              onPressed: _clearMask,
-              icon: const Icon(Icons.clear),
-              tooltip: 'Xóa tất cả',
-            ),
-        ],
-      ),
-      backgroundColor: Colors.black,
-      body: Column(
-        children: [
-          // Drawing area
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.white24),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: _imageLoaded && _originalImageUI != null
-                    ? GestureDetector(
-                        onTapDown: (details) {
-                          if (!_isProcessing) {
-                            _addMaskPoint(details.localPosition);
-                          }
-                        },
-                        onPanUpdate: (details) {
-                          if (!_isProcessing) {
-                            _addMaskPoint(details.localPosition);
-                          }
-                        },
-                        child: CustomPaint(
-                          key: _drawingAreaKey,
-                          painter: SimpleMaskPainter(
-                            originalImage: _originalImageUI!,
-                            maskPoints: _maskPoints,
-                            brushSize: _brushSize,
-                          ),
-                          size: Size.infinite,
+      backgroundColor: Colors.black, // Full black like Apple Photos
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Apple Photos style header
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Cancel button
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                  
+                  // Reset button - center like Apple Photos
+                  if (_maskPoints.isNotEmpty && !_isProcessing)
+                    TextButton(
+                      onPressed: _clearMask,
+                      child: const Text(
+                        'RESET',
+                        style: TextStyle(
+                          color: Colors.yellow,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
                         ),
-                      )
-                    : const Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            CircularProgressIndicator(color: Colors.blue),
-                            SizedBox(height: 16),
-                            Text(
-                              'Đang tải ảnh...',
-                              style: TextStyle(color: Colors.white),
+                      ),
+                    )
+                  else
+                    const SizedBox.shrink(),
+                  
+                  // Clean Up button
+                  if (_maskPoints.isNotEmpty && !_isProcessing)
+                    TextButton(
+                      onPressed: _processMask,
+                      child: const Text(
+                        'Clean Up',
+                        style: TextStyle(
+                          color: Colors.blue,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    )
+                  else
+                    const SizedBox(width: 70), // Maintain spacing
+                ],
+              ),
+            ),
+            
+            // Main drawing area - full screen
+            Expanded(
+              child: Stack(
+                children: [
+                  // Image and drawing area - full screen like Apple Photos
+                  _imageLoaded && _originalImageUI != null
+                      ? GestureDetector(
+                          onTapDown: (details) {
+                            if (!_isProcessing) {
+                              _addMaskPoint(details.localPosition);
+                            }
+                          },
+                          onPanUpdate: (details) {
+                            if (!_isProcessing) {
+                              _addMaskPoint(details.localPosition);
+                            }
+                          },
+                          child: CustomPaint(
+                            key: _drawingAreaKey,
+                            painter: SimpleMaskPainter(
+                              originalImage: _originalImageUI!,
+                              maskPoints: _maskPoints,
+                              brushSize: _brushSize,
                             ),
-                          ],
+                            size: Size.infinite,
+                          ),
+                        )
+                      : const Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              CircularProgressIndicator(color: Colors.blue),
+                              SizedBox(height: 16),
+                              Text(
+                                'Loading...',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        ),
+                  
+                  // Apple Photos style instruction overlay
+                  if (_showInstructions && _imageLoaded && !_isProcessing)
+                    Positioned(
+                      bottom: 120,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.4),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Tap, brush, or circle what you want to remove.',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                'Pinch to pan and zoom.',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-              ),
-            ),
-          ),
-          
-          // Controls
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade900,
-              border: Border(top: BorderSide(color: Colors.white24)),
-            ),
-            child: Column(
-              children: [
-                // Brush size
-                Row(
-                  children: [
-                    const Text('Kích thước: ', style: TextStyle(color: Colors.white)),
-                    Expanded(
-                      child: Slider(
-                        value: _brushSize,
-                        min: 10,
-                        max: 60,
-                        divisions: 10,
-                        label: _brushSize.round().toString(),
-                        onChanged: (value) {
-                          setState(() {
-                            _brushSize = value;
-                          });
-                        },
-                      ),
                     ),
-                    Text('${_brushSize.round()}px', style: const TextStyle(color: Colors.white)),
-                  ],
-                ),
-                
-                const SizedBox(height: 16),
-                
-                // Process button
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _isProcessing ? null : _processMask,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: _isProcessing
-                        ? const Row(
+                  
+                  // Processing overlay - Apple Photos style
+                  if (_isProcessing)
+                    Container(
+                      color: Colors.black.withOpacity(0.3),
+                      child: const Center(
+                        child: Container(
+                          padding: EdgeInsets.all(32),
+                          decoration: BoxDecoration(
+                            color: Colors.black54,
+                            borderRadius: BorderRadius.all(Radius.circular(16)),
+                          ),
+                          child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               SizedBox(
-                                width: 20,
-                                height: 20,
+                                width: 48,
+                                height: 48,
                                 child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
+                                  color: Colors.blue,
+                                  strokeWidth: 3,
                                 ),
                               ),
-                              SizedBox(width: 12),
-                              Text('Đang xử lý...'),
+                              SizedBox(height: 24),
+                              Text(
+                                'Cleaning up...',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                'AI is removing the selected object',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
+                              ),
                             ],
-                          )
-                        : const Text(
-                            'Xử lý ảnh',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           ),
-                  ),
-                ),
-              ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
