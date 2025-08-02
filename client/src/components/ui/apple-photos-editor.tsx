@@ -48,7 +48,7 @@ export default function ApplePhotosEditor({
   const [currentStroke, setCurrentStroke] = useState<MaskStroke | null>(null);
   const [undoStack, setUndoStack] = useState<MaskStroke[][]>([]);
   const [redoStack, setRedoStack] = useState<MaskStroke[][]>([]);
-  const [brushSize, setBrushSize] = useState(30);
+  const [brushSize, setBrushSize] = useState(24); // Fixed brush size like Apple Photos
   const [processedImageUrl, setProcessedImageUrl] = useState<string>('');
   const [isDrawing, setIsDrawing] = useState(false);
   
@@ -118,7 +118,7 @@ export default function ApplePhotosEditor({
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Draw all completed strokes
+    // Draw all completed strokes with consistent style
     maskStrokes.forEach(stroke => {
       drawStroke(ctx, stroke);
     });
@@ -134,9 +134,16 @@ export default function ApplePhotosEditor({
 
     ctx.save();
     ctx.globalCompositeOperation = 'source-over';
-    ctx.strokeStyle = processingState === 'processing' 
-      ? 'rgba(0, 122, 255, 0.6)' // Blue when processing
-      : 'rgba(255, 59, 48, 0.7)'; // Red when selecting
+    
+    // Apple Photos style - semi-transparent white for selection
+    const isProcessing = processingState === 'processing';
+    ctx.strokeStyle = isProcessing 
+      ? 'rgba(0, 122, 255, 0.8)' // iOS Blue when processing
+      : 'rgba(255, 255, 255, 0.9)'; // White when selecting (like Apple Photos)
+    ctx.fillStyle = isProcessing 
+      ? 'rgba(0, 122, 255, 0.8)'
+      : 'rgba(255, 255, 255, 0.9)';
+      
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.lineWidth = stroke.brushSize;
@@ -144,12 +151,12 @@ export default function ApplePhotosEditor({
     ctx.beginPath();
     
     if (stroke.points.length === 1) {
-      // Single point - draw a circle
+      // Single point - draw a filled circle
       const point = stroke.points[0];
       ctx.arc(point.x, point.y, stroke.brushSize / 2, 0, Math.PI * 2);
       ctx.fill();
     } else {
-      // Multiple points - draw smooth line
+      // Multiple points - draw smooth brush stroke
       ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
       
       for (let i = 1; i < stroke.points.length - 1; i++) {
@@ -166,18 +173,18 @@ export default function ApplePhotosEditor({
       ctx.stroke();
     }
 
-    ctx.restore();
-
-    // Add pulsing effect when processing
-    if (processingState === 'processing') {
+    // Add subtle glow effect when processing (Apple Photos style)
+    if (isProcessing) {
       ctx.save();
       ctx.globalCompositeOperation = 'source-over';
-      const pulseAlpha = 0.3 + 0.2 * Math.sin(Date.now() * 0.01);
+      const pulseAlpha = 0.4 + 0.3 * Math.sin(Date.now() * 0.005);
       ctx.strokeStyle = `rgba(0, 122, 255, ${pulseAlpha})`;
-      ctx.lineWidth = stroke.brushSize + 4;
+      ctx.lineWidth = stroke.brushSize + 6;
       ctx.stroke();
       ctx.restore();
     }
+
+    ctx.restore();
   };
 
   const getCanvasCoordinates = (clientX: number, clientY: number) => {
@@ -399,46 +406,49 @@ export default function ApplePhotosEditor({
 
   return (
     <div className={cn("h-screen bg-black flex flex-col", className)}>
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-black text-white">
+      {/* Header - Apple Photos Style */}
+      <div className="flex items-center justify-between px-4 pt-4 pb-2 bg-black text-white safe-area-top">
         <Button
           variant="ghost"
           size="sm"
           onClick={onCancel}
-          className="text-blue-400 hover:text-blue-300"
+          className="text-blue-400 hover:text-blue-300 font-medium"
         >
           Cancel
         </Button>
         
+        {/* Center Title - only show when selecting */}
+        {processingState === 'selecting' && maskStrokes.length > 0 && (
+          <div className="absolute left-1/2 transform -translate-x-1/2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleReset}
+              className="text-yellow-400 hover:text-yellow-300 font-medium"
+            >
+              RESET
+            </Button>
+          </div>
+        )}
+        
         <div className="flex items-center space-x-4">
           {processingState === 'completed' && (
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:text-gray-300"
-              >
-                <Share className="w-4 h-4 mr-2" />
-                Share
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleSave}
-                className="text-blue-400 hover:text-blue-300 font-medium"
-              >
-                Done
-              </Button>
-            </>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSave}
+              className="text-blue-400 hover:text-blue-300 font-medium"
+            >
+              Done
+            </Button>
           )}
           
-          {processingState === 'selecting' && (
+          {processingState === 'selecting' && maskStrokes.length > 0 && (
             <Button
               variant="ghost"
               size="sm"
               onClick={handleProcessCleanup}
               className="text-blue-400 hover:text-blue-300 font-medium"
-              disabled={maskStrokes.length === 0}
             >
               Clean Up
             </Button>
@@ -479,113 +489,127 @@ export default function ApplePhotosEditor({
           />
         )}
 
-        {/* Processing Overlay */}
+        {/* Processing Overlay - Apple Photos Style */}
         {processingState === 'processing' && (
-          <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
-            <div className="bg-black bg-opacity-75 rounded-lg p-6 text-white text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mx-auto mb-4"></div>
-              <p className="text-sm">Processing with AI...</p>
+          <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+            <div className="ios-blur-dark rounded-2xl p-8 text-white text-center">
+              <div className="processing-glow">
+                <div className="animate-spin rounded-full h-12 w-12 border-2 border-transparent border-t-blue-400 border-r-blue-400 mx-auto mb-6"></div>
+              </div>
+              <p className="text-base font-medium mb-1">Cleaning up...</p>
+              <p className="text-sm opacity-75">AI is removing the selected object</p>
             </div>
           </div>
         )}
 
-        {/* Instruction Text */}
+        {/* Instruction Text - Exactly like Apple Photos */}
         {selectedTool === 'cleanup' && processingState === 'idle' && maskStrokes.length === 0 && (
-          <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 text-white text-center">
-            <p className="text-sm opacity-75">Tap, brush, or circle what you want to remove.</p>
-            <p className="text-xs opacity-50 mt-1">Pinch to pan and zoom.</p>
+          <div className="absolute bottom-32 left-1/2 transform -translate-x-1/2 text-white text-center px-8">
+            <div className="ios-blur-dark rounded-xl px-4 py-3">
+              <p className="text-sm font-medium">Tap, brush, or circle what you want to remove.</p>
+              <p className="text-xs opacity-75 mt-1">Pinch to pan and zoom.</p>
+            </div>
+          </div>
+        )}
+
+        {/* Processing Status - Like Apple Photos */}
+        {processingState === 'selecting' && maskStrokes.length > 0 && (
+          <div className="absolute top-20 left-1/2 transform -translate-x-1/2 text-white text-center px-8">
+            <div className="ios-blur-dark rounded-full px-4 py-2">
+              <p className="text-xs font-medium">Selected area ready for cleanup</p>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Bottom Tools */}
-      <div className="bg-black text-white p-4">
-        {/* Editing Tools */}
-        <div className="flex items-center justify-center space-x-6 mb-4">
-          {tools.map((tool) => (
-            <button
-              key={tool.id}
-              onClick={() => setSelectedTool(tool.id)}
-              className={cn(
-                "flex flex-col items-center space-y-1 text-xs font-medium transition-colors",
-                selectedTool === tool.id
-                  ? "text-yellow-400"
-                  : "text-gray-400 hover:text-white"
-              )}
-            >
-              {tool.icon && (
-                <div className="w-6 h-6 flex items-center justify-center">
-                  {tool.icon}
-                </div>
-              )}
-              <span>{tool.label}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Cleanup Controls */}
-        {selectedTool === 'cleanup' && (
-          <>
-            <Separator className="bg-gray-700 my-4" />
-            
-            <div className="flex items-center justify-between">
-              {/* Left side - Undo/Redo */}
-              <div className="flex items-center space-x-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleUndo}
-                  disabled={undoStack.length === 0}
-                  className="text-gray-400 hover:text-white disabled:opacity-30"
-                >
-                  <Undo2 className="w-5 h-5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleRedo}
-                  disabled={redoStack.length === 0}
-                  className="text-gray-400 hover:text-white disabled:opacity-30"
-                >
-                  <Redo2 className="w-5 h-5" />
-                </Button>
-                
-                {maskStrokes.length > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleReset}
-                    className="text-gray-400 hover:text-white"
-                  >
-                    <X className="w-4 h-4 mr-1" />
-                    Reset
-                  </Button>
+      {/* Bottom Tools - Apple Photos Style */}
+      <div className="bg-black text-white safe-area-bottom">
+        {/* Only show editing tools when not processing or completed */}
+        {processingState === 'idle' && (
+          <div className="flex items-center justify-center space-x-8 py-4">
+            {tools.map((tool) => (
+              <button
+                key={tool.id}
+                onClick={() => setSelectedTool(tool.id)}
+                className={cn(
+                  "flex flex-col items-center space-y-1 text-xs font-medium transition-colors min-w-[60px]",
+                  selectedTool === tool.id
+                    ? "text-yellow-400"
+                    : "text-gray-400 hover:text-white"
                 )}
-              </div>
+              >
+                {tool.icon && (
+                  <div className="w-6 h-6 flex items-center justify-center">
+                    {tool.icon}
+                  </div>
+                )}
+                <span>{tool.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
 
-              {/* Right side - Feedback */}
-              {processingState === 'completed' && (
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleFeedback(true)}
-                    className="text-gray-400 hover:text-green-400"
-                  >
-                    <ThumbsUp className="w-5 h-5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleFeedback(false)}
-                    className="text-gray-400 hover:text-red-400"
-                  >
-                    <ThumbsDown className="w-5 h-5" />
-                  </Button>
-                </div>
-              )}
-            </div>
-          </>
+        {/* Cleanup Controls - Only when actively selecting/drawing */}
+        {selectedTool === 'cleanup' && processingState === 'selecting' && (
+          <div className="flex items-center justify-center space-x-6 py-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleUndo}
+              disabled={undoStack.length === 0}
+              className="text-gray-400 hover:text-white disabled:opacity-30 flex items-center space-x-1"
+            >
+              <Undo2 className="w-4 h-4" />
+              <span className="text-xs">Undo</span>
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRedo}
+              disabled={redoStack.length === 0}
+              className="text-gray-400 hover:text-white disabled:opacity-30 flex items-center space-x-1"
+            >
+              <Redo2 className="w-4 h-4" />
+              <span className="text-xs">Redo</span>
+            </Button>
+            
+            {maskStrokes.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleReset}
+                className="text-gray-400 hover:text-white flex items-center space-x-1"
+              >
+                <X className="w-4 h-4" />
+                <span className="text-xs">Reset</span>
+              </Button>
+            )}
+          </div>
+        )}
+
+        {/* Feedback Controls - Only when completed */}
+        {processingState === 'completed' && (
+          <div className="flex items-center justify-center space-x-8 py-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleFeedback(true)}
+              className="text-gray-400 hover:text-green-400 flex flex-col items-center space-y-1"
+            >
+              <ThumbsUp className="w-5 h-5" />
+              <span className="text-xs">Good</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleFeedback(false)}
+              className="text-gray-400 hover:text-red-400 flex flex-col items-center space-y-1"
+            >
+              <ThumbsDown className="w-5 h-5" />
+              <span className="text-xs">Not Good</span>
+            </Button>
+          </div>
         )}
       </div>
     </div>
