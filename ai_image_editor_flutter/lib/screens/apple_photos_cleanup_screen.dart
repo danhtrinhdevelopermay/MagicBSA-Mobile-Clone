@@ -35,6 +35,10 @@ class _ApplePhotosCleanupScreenState extends State<ApplePhotosCleanupScreen>
   bool isProcessing = false;
   bool hasResult = false;
   
+  // Image sizing for accurate mask generation
+  Size _imageDisplaySize = const Size(400, 400);
+  Size _originalImageSize = const Size(400, 400);
+  
   @override
   void initState() {
     super.initState();
@@ -239,11 +243,22 @@ class _ApplePhotosCleanupScreenState extends State<ApplePhotosCleanupScreen>
             children: [
               // Original or result image
               Positioned.fill(
-                child: Image.memory(
-                  hasResult && provider.processedImage != null 
-                    ? provider.processedImage!
-                    : provider.originalImage!.readAsBytesSync(),
-                  fit: BoxFit.contain,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    // Update display size for accurate mask scaling
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) {
+                        _imageDisplaySize = Size(constraints.maxWidth, constraints.maxHeight);
+                      }
+                    });
+                    
+                    return Image.memory(
+                      hasResult && provider.processedImage != null 
+                        ? provider.processedImage!
+                        : provider.originalImage!.readAsBytesSync(),
+                      fit: BoxFit.contain,
+                    );
+                  },
                 ),
               ),
               
@@ -271,26 +286,51 @@ class _ApplePhotosCleanupScreenState extends State<ApplePhotosCleanupScreen>
         setState(() {
           isDrawing = true;
           showInstructions = false;
+          // Add starting point
           maskPoints.add(details.localPosition);
         });
       },
       onPanUpdate: (details) {
         if (isDrawing) {
           setState(() {
-            maskPoints.add(details.localPosition);
+            // Add interpolated points for smoother lines
+            if (maskPoints.isNotEmpty) {
+              final lastPoint = maskPoints.last;
+              final currentPoint = details.localPosition;
+              final distance = (currentPoint - lastPoint).distance;
+              
+              // Add intermediate points if distance is large (for smooth lines)
+              if (distance > 8.0) {
+                final steps = (distance / 4.0).ceil();
+                for (int i = 1; i <= steps; i++) {
+                  final t = i / steps;
+                  final interpolatedPoint = Offset.lerp(lastPoint, currentPoint, t)!;
+                  maskPoints.add(interpolatedPoint);
+                }
+              } else {
+                maskPoints.add(currentPoint);
+              }
+            } else {
+              maskPoints.add(details.localPosition);
+            }
           });
         }
       },
       onPanEnd: (details) {
         setState(() {
           isDrawing = false;
+          // Add a final filled circle at the end point for better coverage
+          if (maskPoints.isNotEmpty) {
+            final lastPoint = maskPoints.last;
+            maskPoints.addAll(_createCircle(lastPoint, 12));
+          }
         });
       },
       onTapDown: (details) {
         setState(() {
           showInstructions = false;
-          // Add a small circle for tap
-          maskPoints.addAll(_createCircle(details.localPosition, 24));
+          // Add a filled circle for tap with better coverage
+          maskPoints.addAll(_createCircle(details.localPosition, 30));
         });
       },
       child: CustomPaint(
@@ -527,7 +567,15 @@ class _ApplePhotosCleanupScreenState extends State<ApplePhotosCleanupScreen>
   }
   
   void _startCleanup() async {
-    if (maskPoints.isEmpty) return;
+    if (maskPoints.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng vẽ mask trên đối tượng cần xóa'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
     
     setState(() {
       isProcessing = true;
@@ -540,8 +588,13 @@ class _ApplePhotosCleanupScreenState extends State<ApplePhotosCleanupScreen>
     final provider = Provider.of<ImageEditProvider>(context, listen: false);
     
     try {
-      // Convert mask points to image data
+      // Convert mask points to image data with improved scaling
       final maskData = await _createMaskImage();
+      
+      // Debug info
+      print('🎨 Mask created: ${maskData.length} bytes, ${maskPoints.length} mask points');
+      print('📱 Original image: ${provider.originalImage?.path}');
+      
       await provider.cleanupWithMask(maskData);
       
       // Simulate processing time for smooth UX
@@ -555,7 +608,11 @@ class _ApplePhotosCleanupScreenState extends State<ApplePhotosCleanupScreen>
       
       _overlayController.reverse();
       
+      print('✅ Cleanup completed successfully');
+      
     } catch (e) {
+      print('❌ Cleanup failed: $e');
+      
       setState(() {
         isProcessing = false;
         currentStep = 2;
@@ -565,8 +622,8 @@ class _ApplePhotosCleanupScreenState extends State<ApplePhotosCleanupScreen>
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to process image. Please try again.'),
+          SnackBar(
+            content: Text('Lỗi xử lý ảnh: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );
@@ -591,30 +648,111 @@ class _ApplePhotosCleanupScreenState extends State<ApplePhotosCleanupScreen>
   }
   
   Future<Uint8List> _createMaskImage() async {
-    // Create a mask image from the drawn points
+    final provider = Provider.of<ImageEditProvider>(context, listen: false);
+    if (provider.originalImage == null) {
+      throw Exception('No original image available');
+    }
+    
+    // Get original image dimensions
+    final imageBytes = await provider.originalImage!.readAsBytes();
+    final codec = await ui.instantiateImageCodec(imageBytes);
+    final frameInfo = await codec.getNextFrame();
+    final originalImage = frameInfo.image;
+    
+    final imageWidth = originalImage.width;
+    final imageHeight = originalImage.height;
+    
+    // Store original image size for future use
+    _originalImageSize = Size(imageWidth.toDouble(), imageHeight.toDouble());
+    
+    // Calculate actual display size considering aspect ratio and BoxFit.contain
+    final imageAspectRatio = imageWidth / imageHeight;
+    final displayAspectRatio = _imageDisplaySize.width / _imageDisplaySize.height;
+    
+    Size actualDisplaySize;
+    if (imageAspectRatio > displayAspectRatio) {
+      // Image is wider - fit to width
+      actualDisplaySize = Size(
+        _imageDisplaySize.width,
+        _imageDisplaySize.width / imageAspectRatio,
+      );
+    } else {
+      // Image is taller - fit to height
+      actualDisplaySize = Size(
+        _imageDisplaySize.height * imageAspectRatio,
+        _imageDisplaySize.height,
+      );
+    }
+    
+    // Calculate offset for centering
+    final offsetX = (_imageDisplaySize.width - actualDisplaySize.width) / 2;
+    final offsetY = (_imageDisplaySize.height - actualDisplaySize.height) / 2;
+    
+    // Calculate scale factors
+    final scaleX = imageWidth / actualDisplaySize.width;
+    final scaleY = imageHeight / actualDisplaySize.height;
+    
+    // Create mask with original image dimensions
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
+    
+    // Fill with black background first
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, imageWidth.toDouble(), imageHeight.toDouble()),
+      Paint()..color = Colors.black,
+    );
+    
     final paint = Paint()
       ..color = Colors.white
-      ..strokeWidth = 24
+      ..strokeWidth = math.max(24.0 * scaleX, 10.0) // Scale brush size with image
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
     
-    // Draw the mask
+    // Draw the mask with scaled and offset coordinates
     for (int i = 0; i < maskPoints.length - 1; i++) {
-      canvas.drawLine(maskPoints[i], maskPoints[i + 1], paint);
+      final adjustedStart = Offset(
+        (maskPoints[i].dx - offsetX) * scaleX,
+        (maskPoints[i].dy - offsetY) * scaleY,
+      );
+      final adjustedEnd = Offset(
+        (maskPoints[i + 1].dx - offsetX) * scaleX,
+        (maskPoints[i + 1].dy - offsetY) * scaleY,
+      );
+      
+      // Only draw if points are within image bounds
+      if (_isPointInBounds(adjustedStart, imageWidth, imageHeight) && 
+          _isPointInBounds(adjustedEnd, imageWidth, imageHeight)) {
+        canvas.drawLine(adjustedStart, adjustedEnd, paint);
+      }
+    }
+    
+    // Also draw circles for tap points to ensure coverage
+    final circlePaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    
+    for (final point in maskPoints) {
+      final adjustedPoint = Offset(
+        (point.dx - offsetX) * scaleX,
+        (point.dy - offsetY) * scaleY,
+      );
+      
+      if (_isPointInBounds(adjustedPoint, imageWidth, imageHeight)) {
+        canvas.drawCircle(adjustedPoint, math.max(15.0 * math.min(scaleX, scaleY), 8.0), circlePaint);
+      }
     }
     
     final picture = recorder.endRecording();
-    final image = await picture.toImage(400, 400);
-    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    final maskImage = await picture.toImage(imageWidth, imageHeight);
+    final byteData = await maskImage.toByteData(format: ui.ImageByteFormat.png);
     
     return byteData!.buffer.asUint8List();
   }
   
   List<Offset> _createCircle(Offset center, double radius) {
     List<Offset> points = [];
-    for (int i = 0; i < 360; i += 10) {
+    // Create denser circle for better coverage
+    for (int i = 0; i < 360; i += 5) {
       final angle = i * 3.14159 / 180;
       points.add(Offset(
         center.dx + radius * math.cos(angle),
@@ -622,6 +760,13 @@ class _ApplePhotosCleanupScreenState extends State<ApplePhotosCleanupScreen>
       ));
     }
     return points;
+  }
+  
+  bool _isPointInBounds(Offset point, int imageWidth, int imageHeight) {
+    return point.dx >= 0 && 
+           point.dx <= imageWidth && 
+           point.dy >= 0 && 
+           point.dy <= imageHeight;
   }
 }
 
@@ -634,14 +779,24 @@ class MaskPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (points.isEmpty) return;
     
-    final paint = Paint()
+    // Draw filled circles for each point to ensure solid coverage
+    final circlePaint = Paint()
+      ..color = Colors.white.withOpacity(0.7)
+      ..style = PaintingStyle.fill;
+    
+    for (final point in points) {
+      canvas.drawCircle(point, 12, circlePaint);
+    }
+    
+    // Draw connecting lines for continuous strokes
+    final strokePaint = Paint()
       ..color = Colors.white.withOpacity(0.7)
       ..strokeWidth = 24
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
     
     for (int i = 0; i < points.length - 1; i++) {
-      canvas.drawLine(points[i], points[i + 1], paint);
+      canvas.drawLine(points[i], points[i + 1], strokePaint);
     }
   }
   
