@@ -28,8 +28,12 @@ class _ApplePhotosCleanupScreenState extends State<ApplePhotosCleanupScreen>
   // Animation controllers
   late AnimationController _processingController;
   late AnimationController _overlayController;
+  late AnimationController _gradientController;
+  late AnimationController _waveController;
   late Animation<double> _pulseAnimation;
   late Animation<double> _overlayAnimation;
+  late Animation<double> _gradientAnimation;
+  late Animation<double> _waveAnimation;
   
   // Processing state
   bool isProcessing = false;
@@ -56,6 +60,18 @@ class _ApplePhotosCleanupScreenState extends State<ApplePhotosCleanupScreen>
       vsync: this,
     );
     
+    // Gradient animation for smooth pastel color movement
+    _gradientController = AnimationController(
+      duration: const Duration(milliseconds: 3000),
+      vsync: this,
+    );
+    
+    // Wave animation for AirDrop-style ripple effect
+    _waveController = AnimationController(
+      duration: const Duration(milliseconds: 2000),
+      vsync: this,
+    );
+    
     _pulseAnimation = Tween<double>(
       begin: 0.6,
       end: 1.0,
@@ -72,13 +88,34 @@ class _ApplePhotosCleanupScreenState extends State<ApplePhotosCleanupScreen>
       curve: Curves.easeInOut,
     ));
     
+    // Gradient animation for horizontal/swirl movement
+    _gradientAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _gradientController,
+      curve: Curves.linear,
+    ));
+    
+    // Wave animation for ripple effect
+    _waveAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _waveController,
+      curve: Curves.easeOut,
+    ));
+    
     _processingController.repeat(reverse: true);
+    // Gradient và wave animations sẽ bắt đầu khi có processing
   }
   
   @override
   void dispose() {
     _processingController.dispose();
     _overlayController.dispose();
+    _gradientController.dispose();
+    _waveController.dispose();
     super.dispose();
   }
   
@@ -342,13 +379,15 @@ class _ApplePhotosCleanupScreenState extends State<ApplePhotosCleanupScreen>
   
   Widget _buildMaskOverlay() {
     return AnimatedBuilder(
-      animation: _pulseAnimation,
+      animation: Listenable.merge([_pulseAnimation, _gradientAnimation, _waveAnimation]),
       builder: (context, child) {
         return CustomPaint(
           painter: ProcessingOverlayPainter(
             maskPoints, 
             _pulseAnimation.value,
             _overlayAnimation.value,
+            _gradientAnimation.value,
+            _waveAnimation.value,
           ),
           size: Size.infinite,
         );
@@ -582,7 +621,10 @@ class _ApplePhotosCleanupScreenState extends State<ApplePhotosCleanupScreen>
       currentStep = 3;
     });
     
+    // Start all animations for the enhanced processing effect
     _overlayController.forward();
+    _gradientController.repeat();
+    _waveController.repeat();
     
     // Call the actual cleanup API
     final provider = Provider.of<ImageEditProvider>(context, listen: false);
@@ -606,7 +648,10 @@ class _ApplePhotosCleanupScreenState extends State<ApplePhotosCleanupScreen>
         currentStep = 4;
       });
       
+      // Stop all animations with fade out effect
       _overlayController.reverse();
+      _gradientController.stop();
+      _waveController.stop();
       
       print('✅ Cleanup completed successfully');
       
@@ -618,7 +663,10 @@ class _ApplePhotosCleanupScreenState extends State<ApplePhotosCleanupScreen>
         currentStep = 2;
       });
       
+      // Stop animations on error
       _overlayController.reverse();
+      _gradientController.stop();
+      _waveController.stop();
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -808,21 +856,152 @@ class ProcessingOverlayPainter extends CustomPainter {
   final List<Offset> maskPoints;
   final double pulseValue;
   final double overlayValue;
+  final double gradientValue;
+  final double waveValue;
   
-  ProcessingOverlayPainter(this.maskPoints, this.pulseValue, this.overlayValue);
+  ProcessingOverlayPainter(
+    this.maskPoints, 
+    this.pulseValue, 
+    this.overlayValue, 
+    this.gradientValue, 
+    this.waveValue
+  );
   
   @override
   void paint(Canvas canvas, Size size) {
     if (maskPoints.isEmpty) return;
     
-    final paint = Paint()
-      ..color = Colors.blue.withOpacity(0.6 * overlayValue * pulseValue)
-      ..strokeWidth = 32
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
+    // Find the bounding box of mask points
+    double minX = maskPoints.first.dx;
+    double maxX = maskPoints.first.dx;
+    double minY = maskPoints.first.dy;
+    double maxY = maskPoints.first.dy;
     
-    for (int i = 0; i < maskPoints.length - 1; i++) {
-      canvas.drawLine(maskPoints[i], maskPoints[i + 1], paint);
+    for (final point in maskPoints) {
+      minX = math.min(minX, point.dx);
+      maxX = math.max(maxX, point.dx);
+      minY = math.min(minY, point.dy);
+      maxY = math.max(maxY, point.dy);
+    }
+    
+    final centerX = (minX + maxX) / 2;
+    final centerY = (minY + maxY) / 2;
+    final maskRadius = math.max((maxX - minX) / 2, (maxY - minY) / 2) + 40;
+    
+    // Create animated gradient with pastel colors
+    final gradientColors = [
+      Color.lerp(
+        const Color(0xFFFFB6C1), // Light pink
+        const Color(0xFFE6E6FA), // Lavender
+        (math.sin(gradientValue * 2 * math.pi) + 1) / 2,
+      )!,
+      Color.lerp(
+        const Color(0xFFB0E0E6), // Powder blue
+        const Color(0xFFF0F8FF), // Alice blue
+        (math.sin(gradientValue * 2 * math.pi + math.pi / 2) + 1) / 2,
+      )!,
+      Color.lerp(
+        const Color(0xFFF5F5DC), // Beige
+        const Color(0xFFFFE4E1), // Misty rose
+        (math.sin(gradientValue * 2 * math.pi + math.pi) + 1) / 2,
+      )!,
+    ];
+    
+    // Create moving gradient
+    final gradientCenter = Offset(
+      centerX + math.sin(gradientValue * 2 * math.pi) * 30,
+      centerY + math.cos(gradientValue * 2 * math.pi) * 20,
+    );
+    
+    final gradientPaint = Paint()
+      ..shader = RadialGradient(
+        center: Alignment.center,
+        radius: 1.2,
+        colors: gradientColors.map((color) => 
+          color.withOpacity(0.4 * overlayValue * pulseValue)
+        ).toList(),
+        stops: const [0.0, 0.5, 1.0],
+      ).createShader(Rect.fromCircle(
+        center: gradientCenter,
+        radius: maskRadius * 1.5,
+      ));
+    
+    // Draw mask area with animated gradient
+    for (final point in maskPoints) {
+      canvas.drawCircle(point, 20, gradientPaint);
+    }
+    
+    // Draw ripple wave effects (AirDrop style)
+    if (waveValue > 0.1) {
+      final waveCount = 3;
+      for (int i = 0; i < waveCount; i++) {
+        final waveOffset = i * 0.3;
+        final currentWave = (waveValue + waveOffset) % 1.0;
+        
+        if (currentWave > 0.1) {
+          final waveRadius = maskRadius * (0.5 + currentWave * 2.0);
+          final waveOpacity = (1.0 - currentWave) * 0.3 * overlayValue;
+          
+          final wavePaint = Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2.0 * (1.0 - currentWave)
+            ..color = const Color(0xFFFFFFFF).withOpacity(waveOpacity);
+          
+          // Draw ripple circles around the mask area
+          canvas.drawCircle(
+            Offset(centerX, centerY),
+            waveRadius,
+            wavePaint,
+          );
+          
+          // Add subtle distortion effect
+          final distortionPaint = Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.0
+            ..color = const Color(0xFFE6E6FA).withOpacity(waveOpacity * 0.5);
+          
+          // Draw smaller inner ripples
+          for (int j = 1; j <= 2; j++) {
+            canvas.drawCircle(
+              Offset(centerX, centerY),
+              waveRadius * (0.3 + j * 0.3),
+              distortionPaint,
+            );
+          }
+        }
+      }
+    }
+    
+    // Draw subtle glow effect around mask points
+    final glowPaint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = const Color(0xFFFFFFFF).withOpacity(0.1 * overlayValue * pulseValue);
+    
+    for (final point in maskPoints) {
+      canvas.drawCircle(point, 35, glowPaint);
+    }
+    
+    // Add scanning line effect
+    final scanProgress = gradientValue;
+    if (scanProgress > 0.1) {
+      final scanY = minY + (maxY - minY) * scanProgress;
+      final scanPaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0
+        ..shader = LinearGradient(
+          colors: [
+            Colors.transparent,
+            const Color(0xFFFFFFFF).withOpacity(0.6 * overlayValue),
+            Colors.transparent,
+          ],
+          stops: const [0.0, 0.5, 1.0],
+        ).createShader(Rect.fromLTWH(minX - 20, scanY - 10, maxX - minX + 40, 20));
+      
+      canvas.drawLine(
+        Offset(minX - 20, scanY),
+        Offset(maxX + 20, scanY),
+        scanPaint,
+      );
     }
   }
   

@@ -56,6 +56,15 @@ This is a full-stack JavaScript application that provides AI-powered image editi
 - Đảm bảo không ảnh hưởng đến việc build APK khi thay đổi hoặc phát triển ứng dụng
 
 ## Recent Changes
+- **2025-08-02**: Enhanced Flutter Android app loading animation for object removal with advanced Apple-style effects
+  - **Gradient Processing Effect**: Added animated pastel gradient overlay (pink, blue, white) that moves smoothly across mask areas
+  - **AirDrop-style Ripple Waves**: Implemented concentric wave animations that spread from mask center during processing
+  - **Intelligent Scanning Line**: Added horizontal scanning effect that sweeps across selected areas
+  - **Subtle Glow Effects**: Enhanced mask areas with soft white glow during AI processing
+  - **Multi-layered Animation System**: Added separate controllers for gradient, wave, pulse, and overlay animations
+  - **Apple-inspired Visual Polish**: Combined multiple subtle effects to create premium processing feedback
+  - Animation timings: Gradient (3s), Wave ripples (2s), Pulse (1.5s) for smooth, non-jarring experience
+  
 - **2025-08-02**: Updated Flutter Android app with Apple Photos-style object removal interface
   - Removed brush size slider - fixed 24px size like Apple Photos
   - Changed mask color from red to white semi-transparent (matching iOS)
