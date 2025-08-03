@@ -28,6 +28,24 @@ const upload = multer({
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
+  // Root endpoint with API documentation
+  app.get('/', (req, res) => {
+    res.json({
+      name: 'Twink Video Backend API',
+      version: '1.0.0',
+      description: 'Backend API for Flutter mobile app - AI image & video editing',
+      status: 'running',
+      endpoints: {
+        health: '/api/health',
+        videoJobs: '/api/video-jobs',
+        eventBanners: '/api/event-banners',
+        admin: '/api/admin/*'
+      },
+      documentation: 'This is a backend API for mobile app integration only',
+      timestamp: new Date().toISOString()
+    });
+  });
+
   // Health check endpoint
   app.get('/api/health', (req, res) => {
     res.json({ 
@@ -72,10 +90,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         data: videoJob
       });
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating video job:', error);
       
-      if (error.name === 'ZodError') {
+      if (error?.name === 'ZodError') {
         return res.status(400).json({
           success: false,
           message: 'Dữ liệu không hợp lệ',
@@ -108,7 +126,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         data: videoJob
       });
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching video job:', error);
       res.status(500).json({
         success: false,
@@ -163,10 +181,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         data: updatedJob
       });
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating video job:', error);
       
-      if (error.name === 'ZodError') {
+      if (error?.name === 'ZodError') {
         return res.status(400).json({
           success: false,
           message: 'Dữ liệu cập nhật không hợp lệ',
@@ -193,7 +211,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         data: banners
       });
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching event banners:', error);
       res.status(500).json({
         success: false,
@@ -214,10 +232,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         data: banner
       });
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating banner:', error);
       
-      if (error.name === 'ZodError') {
+      if (error?.name === 'ZodError') {
         return res.status(400).json({
           success: false,
           message: 'Dữ liệu banner không hợp lệ',
@@ -242,7 +260,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         data: banners
       });
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching all banners:', error);
       res.status(500).json({
         success: false,

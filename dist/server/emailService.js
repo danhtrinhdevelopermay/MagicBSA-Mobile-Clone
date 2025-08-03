@@ -1,30 +1,24 @@
 import { MailService } from '@sendgrid/mail';
-import type { VideoJob } from '../shared/schema.js';
-
 if (!process.env.SENDGRID_API_KEY) {
-  console.warn("SENDGRID_API_KEY not found. Email notifications will be skipped.");
+    console.warn("SENDGRID_API_KEY not found. Email notifications will be skipped.");
 }
-
 const mailService = new MailService();
 if (process.env.SENDGRID_API_KEY) {
-  mailService.setApiKey(process.env.SENDGRID_API_KEY);
+    mailService.setApiKey(process.env.SENDGRID_API_KEY);
 }
-
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@twink.ai';
 const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@twink.ai';
-
-export async function sendVideoJobNotification(videoJob: VideoJob): Promise<boolean> {
-  if (!process.env.SENDGRID_API_KEY) {
-    console.log('SendGrid not configured, skipping email notification');
-    return false;
-  }
-
-  try {
-    const emailData = {
-      to: ADMIN_EMAIL,
-      from: FROM_EMAIL,
-      subject: `🎬 Yêu cầu tạo video mới - ${videoJob.userName}`,
-      html: `
+export async function sendVideoJobNotification(videoJob) {
+    if (!process.env.SENDGRID_API_KEY) {
+        console.log('SendGrid not configured, skipping email notification');
+        return false;
+    }
+    try {
+        const emailData = {
+            to: ADMIN_EMAIL,
+            from: FROM_EMAIL,
+            subject: `🎬 Yêu cầu tạo video mới - ${videoJob.userName}`,
+            html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px;">
             🎬 Yêu cầu tạo video AI từ ảnh
@@ -65,30 +59,27 @@ export async function sendVideoJobNotification(videoJob: VideoJob): Promise<bool
           </p>
         </div>
       `,
-    };
-
-    await mailService.send(emailData);
-    console.log(`Video job notification sent to admin for job ${videoJob.id}`);
-    return true;
-    
-  } catch (error) {
-    console.error('Error sending video job notification:', error);
-    return false;
-  }
+        };
+        await mailService.send(emailData);
+        console.log(`Video job notification sent to admin for job ${videoJob.id}`);
+        return true;
+    }
+    catch (error) {
+        console.error('Error sending video job notification:', error);
+        return false;
+    }
 }
-
-export async function sendVideoJobCompletionEmail(videoJob: VideoJob): Promise<boolean> {
-  if (!process.env.SENDGRID_API_KEY) {
-    console.log('SendGrid not configured, skipping completion email');
-    return false;
-  }
-
-  try {
-    const emailData = {
-      to: videoJob.userEmail,
-      from: FROM_EMAIL,
-      subject: `🎉 Video AI của bạn đã hoàn thành - Twink AI`,
-      html: `
+export async function sendVideoJobCompletionEmail(videoJob) {
+    if (!process.env.SENDGRID_API_KEY) {
+        console.log('SendGrid not configured, skipping completion email');
+        return false;
+    }
+    try {
+        const emailData = {
+            to: videoJob.userEmail,
+            from: FROM_EMAIL,
+            subject: `🎉 Video AI của bạn đã hoàn thành - Twink AI`,
+            html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #28a745; border-bottom: 2px solid #28a745; padding-bottom: 10px;">
             🎉 Video AI của bạn đã sẵn sàng!
@@ -145,26 +136,25 @@ export async function sendVideoJobCompletionEmail(videoJob: VideoJob): Promise<b
           </p>
         </div>
       `,
+        };
+        await mailService.send(emailData);
+        console.log(`Video completion email sent to ${videoJob.userEmail} for job ${videoJob.id}`);
+        return true;
+    }
+    catch (error) {
+        console.error('Error sending video completion email:', error);
+        return false;
+    }
+}
+function getStyleDisplayName(style) {
+    const styleMap = {
+        'cinematic': 'Điện ảnh',
+        'anime': 'Anime',
+        'realistic': 'Thực tế',
+        'artistic': 'Nghệ thuật',
+        'vintage': 'Cổ điển',
+        'futuristic': 'Tương lai'
     };
-
-    await mailService.send(emailData);
-    console.log(`Video completion email sent to ${videoJob.userEmail} for job ${videoJob.id}`);
-    return true;
-    
-  } catch (error) {
-    console.error('Error sending video completion email:', error);
-    return false;
-  }
+    return styleMap[style] || style;
 }
-
-function getStyleDisplayName(style: string): string {
-  const styleMap: Record<string, string> = {
-    'cinematic': 'Điện ảnh',
-    'anime': 'Anime',
-    'realistic': 'Thực tế',
-    'artistic': 'Nghệ thuật',
-    'vintage': 'Cổ điển',
-    'futuristic': 'Tương lai'
-  };
-  return styleMap[style] || style;
-}
+//# sourceMappingURL=emailService.js.map
