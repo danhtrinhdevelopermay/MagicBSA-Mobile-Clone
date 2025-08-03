@@ -1,4 +1,4 @@
-modules = ["nodejs-20", "bash", "web", "swift-5.8"]
+modules = ["nodejs-20", "bash", "web", "swift-5.8", "postgresql-16"]
 run = "npm run dev"
 hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
@@ -44,4 +44,4 @@ localPort = 5000
 externalPort = 80
 
 [agent]
-integrations = ["javascript_openai==1.0.0", "javascript_database==1.0.0", "javascript_log_in_with_replit==1.0.0", "javascript_mem_db==1.0.0"]
+integrations = ["javascript_openai==1.0.0", "javascript_sendgrid==1.0.0", "javascript_log_in_with_replit==1.0.0", "javascript_database==1.0.0", "javascript_mem_db==1.0.0"]
