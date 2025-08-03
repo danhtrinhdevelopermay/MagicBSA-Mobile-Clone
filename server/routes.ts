@@ -2,7 +2,7 @@ import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertImageJobSchema } from "@shared/schema";
+import { insertImageJobSchema, insertVideoJobSchema, insertEventBannerSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
 import { randomUUID } from "crypto";
@@ -264,6 +264,158 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Get jobs error:", error);
       res.status(500).json({ message: "Failed to get jobs" });
+    }
+  });
+
+  // Video jobs routes
+  app.post("/api/video-jobs", upload.single('image'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No image file provided" });
+      }
+
+      const { userEmail, userName, phoneNumber, videoStyle, duration, description } = req.body;
+      
+      if (!userEmail || !userName || !videoStyle || !duration) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      // Save uploaded file with unique name
+      const fileExtension = path.extname(req.file.originalname);
+      const uniqueFileName = `${randomUUID()}${fileExtension}`;
+      const uploadPath = path.join('uploads', uniqueFileName);
+      
+      await fs.rename(req.file.path, uploadPath);
+
+      const videoJobData = insertVideoJobSchema.parse({
+        userEmail,
+        userName,
+        phoneNumber,
+        originalImageUrl: `/${uploadPath}`,
+        videoStyle,
+        duration,
+        description,
+        status: "pending"
+      });
+
+      const job = await storage.createVideoJob(videoJobData);
+      res.json(job);
+    } catch (error) {
+      console.error("Video job creation error:", error);
+      res.status(500).json({ message: "Failed to create video job" });
+    }
+  });
+
+  app.get("/api/video-jobs", async (req, res) => {
+    try {
+      const jobs = await storage.getAllVideoJobs();
+      res.json(jobs);
+    } catch (error) {
+      console.error("Get video jobs error:", error);
+      res.status(500).json({ message: "Failed to get video jobs" });
+    }
+  });
+
+  app.get("/api/video-jobs/:id", async (req, res) => {
+    try {
+      const job = await storage.getVideoJob(req.params.id);
+      if (!job) {
+        return res.status(404).json({ message: "Video job not found" });
+      }
+      res.json(job);
+    } catch (error) {
+      console.error("Get video job error:", error);
+      res.status(500).json({ message: "Failed to get video job" });
+    }
+  });
+
+  app.patch("/api/video-jobs/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      
+      const updatedJob = await storage.updateVideoJob(id, {
+        ...updates,
+        updatedAt: new Date()
+      });
+
+      if (!updatedJob) {
+        return res.status(404).json({ message: "Video job not found" });
+      }
+
+      res.json(updatedJob);
+    } catch (error) {
+      console.error("Update video job error:", error);
+      res.status(500).json({ message: "Failed to update video job" });
+    }
+  });
+
+  // Event banners routes
+  app.post("/api/banners", async (req, res) => {
+    try {
+      const bannerData = insertEventBannerSchema.parse(req.body);
+      const banner = await storage.createEventBanner(bannerData);
+      res.json(banner);
+    } catch (error) {
+      console.error("Banner creation error:", error);
+      res.status(500).json({ message: "Failed to create banner" });
+    }
+  });
+
+  app.get("/api/banners", async (req, res) => {
+    try {
+      const banners = await storage.getAllEventBanners();
+      res.json(banners);
+    } catch (error) {
+      console.error("Get banners error:", error);
+      res.status(500).json({ message: "Failed to get banners" });
+    }
+  });
+
+  app.get("/api/banners/active", async (req, res) => {
+    try {
+      const banners = await storage.getActiveEventBanners();
+      res.json(banners);
+    } catch (error) {
+      console.error("Get active banners error:", error);
+      res.status(500).json({ message: "Failed to get active banners" });
+    }
+  });
+
+  app.patch("/api/banners/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      
+      const updatedBanner = await storage.updateEventBanner(id, {
+        ...updates,
+        updatedAt: new Date()
+      });
+
+      if (!updatedBanner) {
+        return res.status(404).json({ message: "Banner not found" });
+      }
+
+      res.json(updatedBanner);
+    } catch (error) {
+      console.error("Update banner error:", error);
+      res.status(500).json({ message: "Failed to update banner" });
+    }
+  });
+
+  app.delete("/api/banners/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteEventBanner(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Banner not found" });
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete banner error:", error);
+      res.status(500).json({ message: "Failed to delete banner" });
     }
   });
 
