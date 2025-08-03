@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/video_job.dart';
-import '../services/banner_service.dart';
+import '../services/video_service.dart';
 
 class AIVideoCreationScreen extends StatefulWidget {
   const AIVideoCreationScreen({Key? key}) : super(key: key);
@@ -140,26 +140,34 @@ class _AIVideoCreationScreenState extends State<AIVideoCreationScreen>
     });
 
     try {
-      final success = await BannerService.submitVideoJob(
+      final result = await VideoService.submitVideoJob(
         userEmail: _userEmailController.text,
         userName: _userNameController.text,
-        phoneNumber: _phoneController.text,
+        userPhone: _phoneController.text.isEmpty ? null : _phoneController.text,
         imagePath: _selectedImage!.path,
         videoStyle: _selectedStyle,
-        duration: _selectedDuration,
-        description: _descriptionController.text,
+        videoDuration: int.parse(_selectedDuration), // Convert to int
+        description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
       );
 
-      if (success) {
+      if (result != null && result['success'] == true) {
         setState(() {
           _isSubmitted = true;
         });
-        _showSnackBar('Yêu cầu đã được gửi thành công!');
+        final message = result['message'] ?? 'Yêu cầu đã được gửi thành công!';
+        _showSnackBar(message);
       } else {
-        throw Exception('Không thể gửi yêu cầu');
+        final errorMessage = result?['message'] ?? 'Không thể gửi yêu cầu. Vui lòng thử lại.';
+        throw Exception(errorMessage);
       }
     } catch (e) {
-      _showSnackBar('Có lỗi xảy ra: ${e.toString()}', isError: true);
+      String errorMessage = e.toString();
+      if (errorMessage.contains('FormatException')) {
+        errorMessage = 'Lỗi định dạng dữ liệu. Vui lòng kiểm tra lại thông tin.';
+      } else if (errorMessage.contains('TimeoutException')) {
+        errorMessage = 'Kết nối timeout. Vui lòng kiểm tra mạng và thử lại.';
+      }
+      _showSnackBar('Có lỗi xảy ra: $errorMessage', isError: true);
     } finally {
       setState(() {
         _isSubmitting = false;

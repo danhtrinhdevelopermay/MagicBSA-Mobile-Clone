@@ -5,7 +5,7 @@ class EventBanner {
   final String imageUrl;
   final String actionUrl;
   final bool isActive;
-  final int order;
+  final int priority;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -16,7 +16,7 @@ class EventBanner {
     required this.imageUrl,
     required this.actionUrl,
     required this.isActive,
-    required this.order,
+    required this.priority,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -26,12 +26,12 @@ class EventBanner {
       id: json['id'],
       title: json['title'],
       description: json['description'],
-      imageUrl: json['imageUrl'],
-      actionUrl: json['actionUrl'],
-      isActive: json['isActive'] ?? true,
-      order: int.tryParse(json['order'].toString()) ?? 0,
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
+      imageUrl: json['image_url'] ?? json['imageUrl'] ?? '',
+      actionUrl: json['action_url'] ?? json['actionUrl'] ?? '',
+      isActive: json['is_active'] ?? json['isActive'] ?? true,
+      priority: int.tryParse(json['priority'].toString()) ?? 0,
+      createdAt: DateTime.parse(json['created_at'] ?? json['createdAt'] ?? DateTime.now().toIso8601String()),
+      updatedAt: DateTime.parse(json['updated_at'] ?? json['updatedAt'] ?? DateTime.now().toIso8601String()),
     );
   }
 
@@ -43,7 +43,7 @@ class EventBanner {
       'imageUrl': imageUrl,
       'actionUrl': actionUrl,
       'isActive': isActive,
-      'order': order.toString(),
+      'priority': priority.toString(),
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
