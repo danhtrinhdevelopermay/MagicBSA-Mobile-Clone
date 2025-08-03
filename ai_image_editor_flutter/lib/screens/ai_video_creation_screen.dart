@@ -130,24 +130,8 @@ class _AIVideoCreationScreenState extends State<AIVideoCreationScreen>
   }
 
   Future<void> _submitRequest() async {
-    // Validate form and all required fields
-    if (!_formKey.currentState!.validate()) {
-      _showSnackBar('Vui lòng điền đầy đủ thông tin bắt buộc', isError: true);
-      return;
-    }
-    
-    if (_selectedImage == null) {
-      _showSnackBar('Vui lòng chọn ảnh để tạo video', isError: true);
-      return;
-    }
-    
-    if (_selectedStyle.isEmpty) {
-      _showSnackBar('Vui lòng chọn phong cách video', isError: true);
-      return;
-    }
-    
-    if (_selectedDuration.isEmpty) {
-      _showSnackBar('Vui lòng chọn thời lượng video', isError: true);
+    if (!_formKey.currentState!.validate() || _selectedImage == null) {
+      _showSnackBar('Vui lòng điền đầy đủ thông tin và chọn ảnh', isError: true);
       return;
     }
 
@@ -157,13 +141,13 @@ class _AIVideoCreationScreenState extends State<AIVideoCreationScreen>
 
     try {
       final success = await BannerService.submitVideoJob(
-        userEmail: _userEmailController.text.trim(),
-        userName: _userNameController.text.trim(),
-        phoneNumber: _phoneController.text.trim(),
+        userEmail: _userEmailController.text,
+        userName: _userNameController.text,
+        phoneNumber: _phoneController.text,
         imagePath: _selectedImage!.path,
         videoStyle: _selectedStyle,
         duration: _selectedDuration,
-        description: _descriptionController.text.trim(),
+        description: _descriptionController.text,
       );
 
       if (success) {
@@ -172,15 +156,10 @@ class _AIVideoCreationScreenState extends State<AIVideoCreationScreen>
         });
         _showSnackBar('Yêu cầu đã được gửi thành công!');
       } else {
-        _showSnackBar('Đã xảy ra lỗi khi gửi yêu cầu. Vui lòng thử lại.', isError: true);
+        throw Exception('Không thể gửi yêu cầu');
       }
     } catch (e) {
-      print('Submit error: $e');
-      _showSnackBar('Yêu cầu của bạn đã được ghi nhận. Admin sẽ xử lý trong 24-48h.', isError: false);
-      // Force success for user experience
-      setState(() {
-        _isSubmitted = true;
-      });
+      _showSnackBar('Có lỗi xảy ra: ${e.toString()}', isError: true);
     } finally {
       setState(() {
         _isSubmitting = false;
