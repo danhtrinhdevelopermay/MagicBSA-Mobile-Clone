@@ -7,7 +7,10 @@ import '../widgets/image_upload_widget.dart';
 import '../widgets/loading_overlay_widget.dart';
 import '../widgets/audio_controls_widget.dart';
 import '../widgets/bottom_navigation_widget.dart';
+import '../widgets/event_banner_slider.dart';
 import '../services/audio_service.dart';
+import '../models/event_banner.dart';
+import '../services/banner_service.dart';
 import 'history_screen.dart';
 import 'premium_screen.dart';
 import 'profile_screen.dart';
@@ -44,6 +47,9 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   final PageController _pageController = PageController();
   Map<String, bool> _isPressed = {};
+  
+  List<EventBanner> _eventBanners = [];
+  bool _bannersLoading = true;
   
   // Define features list
   final List<Feature> features = [
@@ -144,6 +150,26 @@ class _MainScreenState extends State<MainScreen> {
       gifPath: 'assets/gifs/product-photography.gif',
     ),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBanners();
+  }
+
+  Future<void> _loadBanners() async {
+    try {
+      final banners = await BannerService.getActiveBanners();
+      setState(() {
+        _eventBanners = banners;
+        _bannersLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _bannersLoading = false;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -462,7 +488,13 @@ class _MainScreenState extends State<MainScreen> {
                           ),
                         ),
                         
-                        SizedBox(height: 24),
+                        SizedBox(height: 16),
+                        
+                        // Event Banner Slider
+                        if (!_bannersLoading && _eventBanners.isNotEmpty)
+                          EventBannerSlider(banners: _eventBanners),
+                        
+                        SizedBox(height: 20),
                         
                         // Grid tính năng
                         Expanded(

@@ -73,6 +73,9 @@ dependencies:
   
   # Video player for feature demonstrations (keeping for backward compatibility)
   video_player: ^2.8.2
+  
+  # Image caching for banners
+  cached_network_image: ^3.3.1
 
 dev_dependencies:
   flutter_test:
