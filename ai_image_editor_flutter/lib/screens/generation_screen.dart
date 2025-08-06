@@ -636,7 +636,7 @@ class _GenerationScreenState extends State<GenerationScreen> with TickerProvider
       SimpleFeature(title: 'Chất lượng\nHình ảnh', icon: Icons.hd_outlined, badge: 'HD+'),
       SimpleFeature(title: 'AI phục hồi', icon: Icons.auto_fix_high_outlined),
       SimpleFeature(title: 'Khôi phục\nảnh', icon: Icons.people_outline),
-      SimpleFeature(title: 'Siêu phân\ngiải', icon: Icons.4k_outlined),
+      SimpleFeature(title: 'Siêu phân giải', icon: Icons.settings_backup_restore_outlined),
       SimpleFeature(title: 'Hiệu ứng\nmới', icon: Icons.celebration_outlined, badge: 'NEW'),
       SimpleFeature(title: 'Xóa mờ', icon: Icons.blur_off_outlined),
       SimpleFeature(title: 'Ghép nối\nvideo', icon: Icons.video_library_outlined),
