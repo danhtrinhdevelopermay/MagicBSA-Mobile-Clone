@@ -5,6 +5,37 @@ import '../widgets/image_upload_widget.dart';
 import '../widgets/interactive_button.dart';
 import 'apple_photos_cleanup_screen.dart';
 
+// Class definitions moved to top to avoid forward reference issues
+class Feature {
+  final String title;
+  final String description;
+  final IconData icon;
+  final LinearGradient gradient;
+  final String operation;
+  final String? gifPath;
+
+  const Feature({
+    required this.title,
+    required this.description,
+    required this.icon,
+    required this.gradient,
+    required this.operation,
+    this.gifPath,
+  });
+}
+
+class SimpleFeature {
+  final String title;
+  final IconData icon;
+  final String? badge;
+
+  const SimpleFeature({
+    required this.title,
+    required this.icon,
+    this.badge,
+  });
+}
+
 
 class GenerationScreen extends StatefulWidget {
   const GenerationScreen({Key? key}) : super(key: key);
@@ -727,34 +758,4 @@ class _GenerationScreenState extends State<GenerationScreen> with TickerProvider
       );
     }
   }
-}
-
-class Feature {
-  final String title;
-  final String description;
-  final IconData icon;
-  final LinearGradient gradient;
-  final String operation;
-  final String? gifPath;
-
-  const Feature({
-    required this.title,
-    required this.description,
-    required this.icon,
-    required this.gradient,
-    required this.operation,
-    this.gifPath,
-  });
-}
-
-class SimpleFeature {
-  final String title;
-  final IconData icon;
-  final String? badge;
-
-  const SimpleFeature({
-    required this.title,
-    required this.icon,
-    this.badge,
-  });
 }
