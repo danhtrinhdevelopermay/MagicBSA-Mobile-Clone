@@ -1,0 +1,9 @@
+{
+  "name": "twink-video-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx server/index.ts",
+    "start": "tsx server/index.ts"
+  }
+}
